@@ -50,10 +50,7 @@ class DeviceFrame extends ConsumerWidget {
       );
     } else {
       // Use the image skin (stretched to fit using BoxFit.fill or specified fit)
-      background = Image.asset(
-        skin.assetPath!,
-        fit: skin.fit,
-      );
+      background = Image.asset(skin.assetPath!, fit: skin.fit);
     }
 
     return ColoredBox(

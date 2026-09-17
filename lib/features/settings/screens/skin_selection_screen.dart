@@ -176,10 +176,7 @@ class _SkinThumbnail extends StatelessWidget {
         width: 18,
         height: 18,
         child: assetPath != null
-            ? Image.asset(
-                assetPath,
-                fit: BoxFit.cover,
-              )
+            ? Image.asset(assetPath, fit: BoxFit.cover)
             : DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(

@@ -274,9 +274,8 @@ final routerProvider = Provider(
                         path: Routes.deviceSkin.name,
                         name: Routes.deviceSkin.name,
                         parentNavigatorKey: menuNavigatorKey,
-                        pageBuilder: (context, state) => const CupertinoPage(
-                          child: SkinSelectionScreen(),
-                        ),
+                        pageBuilder: (context, state) =>
+                            const CupertinoPage(child: SkinSelectionScreen()),
                       ),
                       GoRoute(
                         path: Routes.excludeDirectories.name,
@@ -696,7 +695,8 @@ final routerProvider = Provider(
                         pageBuilder: (context, state) {
                           final extra =
                               state.extra as Map<String, dynamic>? ?? {};
-                          final photos = (extra['photos'] as List?)
+                          final photos =
+                              (extra['photos'] as List?)
                                   ?.cast<MediaFileModel>() ??
                               [];
                           final index = (extra['index'] as int?) ?? 0;

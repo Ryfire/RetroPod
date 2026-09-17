@@ -36,7 +36,8 @@ class _GamesMenuScreenState extends ConsumerState<GamesMenuScreen>
   String get routeName => Routes.extras.name;
 
   @override
-  List<_GamesListDisplayItems> get displayItems => _GamesListDisplayItems.values;
+  List<_GamesListDisplayItems> get displayItems =>
+      _GamesListDisplayItems.values;
 
   @override
   Future<void> onSelectPressed() =>

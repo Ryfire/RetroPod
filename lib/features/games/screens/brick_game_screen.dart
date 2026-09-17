@@ -67,12 +67,9 @@ class _BrickGamePainter extends CustomPainter {
     for (int row = 0; row < _kRows; row++) {
       for (int col = 0; col < _kColumns; col++) {
         if (bricks[row][col]) {
-          final double left =
-              _kBrickPadding + col * (brickW + _kBrickPadding);
-          final double top =
-              brickAreaTop + row * (brickH + _kBrickPadding);
-          final Rect brickRect =
-              Rect.fromLTWH(left, top, brickW, brickH);
+          final double left = _kBrickPadding + col * (brickW + _kBrickPadding);
+          final double top = brickAreaTop + row * (brickH + _kBrickPadding);
+          final Rect brickRect = Rect.fromLTWH(left, top, brickW, brickH);
           canvas.drawRRect(
             RRect.fromRectAndRadius(brickRect, const Radius.circular(2)),
             Paint()..color = rowColors[row % rowColors.length],
@@ -150,10 +147,7 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
     final angle = (random.nextDouble() * 60 - 30) * (pi / 180) - pi / 2;
     const speed = 2.5;
     _ballVelocity = Offset(cos(angle) * speed, sin(angle) * speed);
-    _bricks = List.generate(
-      _kRows,
-      (_) => List.filled(_kColumns, true),
-    );
+    _bricks = List.generate(_kRows, (_) => List.filled(_kColumns, true));
     _score = 0;
     _gameState = _GameState.playing;
     _lastTick = null;
@@ -216,8 +210,7 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
       for (int row = 0; row < _kRows; row++) {
         for (int col = 0; col < _kColumns; col++) {
           if (!_bricks[row][col]) continue;
-          final double left =
-              _kBrickPadding + col * (brickW + _kBrickPadding);
+          final double left = _kBrickPadding + col * (brickW + _kBrickPadding);
           final double top = brickAreaTop + row * (brickH + _kBrickPadding);
           final Rect brickRect = Rect.fromLTWH(left, top, brickW, brickH);
           final Rect ballRect = Rect.fromCircle(
@@ -234,8 +227,7 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
       }
 
       // Win check
-      final bool allGone =
-          _bricks.every((row) => row.every((b) => !b));
+      final bool allGone = _bricks.every((row) => row.every((b) => !b));
       if (allGone) {
         _gameState = _GameState.win;
       }
@@ -340,18 +332,12 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: Color(0xFFAAAAAA),
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 11),
             ),
             const SizedBox(height: 6),
             const Text(
               'SELECT to restart',
-              style: TextStyle(
-                color: Color(0xFF666666),
-                fontSize: 9,
-              ),
+              style: TextStyle(color: Color(0xFF666666), fontSize: 9),
             ),
           ],
         ),

@@ -36,7 +36,8 @@ class _MediaMenuScreenState extends ConsumerState<MediaMenuScreen>
   String get routeName => Routes.media.name;
 
   @override
-  List<_MediaListDisplayItems> get displayItems => _MediaListDisplayItems.values;
+  List<_MediaListDisplayItems> get displayItems =>
+      _MediaListDisplayItems.values;
 
   @override
   Future<void> onSelectPressed() =>

@@ -9,11 +9,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 const String _kCustomMediaDirsKey = 'custom_media_directories';
 
 const List<String> _kPhotoExtensions = [
-  '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.heic', '.heif',
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.bmp',
+  '.webp',
+  '.heic',
+  '.heif',
 ];
 
 const List<String> _kVideoExtensions = [
-  '.mp4', '.mov', '.avi', '.mkv', '.wmv', '.flv', '.3gp', '.webm', '.m4v',
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.mkv',
+  '.wmv',
+  '.flv',
+  '.3gp',
+  '.webm',
+  '.m4v',
 ];
 
 List<String> _defaultMediaDirs() {
@@ -35,7 +50,8 @@ List<String> _defaultMediaDirs() {
       p.join(home, 'Desktop'),
     ];
   } else if (Platform.isWindows) {
-    final userProfile = Platform.environment['USERPROFILE'] ?? 'C:\\Users\\User';
+    final userProfile =
+        Platform.environment['USERPROFILE'] ?? 'C:\\Users\\User';
     return [
       p.join(userProfile, 'Pictures'),
       p.join(userProfile, 'Videos'),
@@ -58,7 +74,10 @@ Future<List<MediaFileModel>> _scanDirectories(List<String> dirs) async {
     final dir = Directory(dirPath);
     if (!await dir.exists()) continue;
     try {
-      await for (final entity in dir.list(recursive: true, followLinks: false)) {
+      await for (final entity in dir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is! File) continue;
         final ext = p.extension(entity.path).toLowerCase();
         MediaFileType? type;
@@ -69,19 +88,24 @@ Future<List<MediaFileModel>> _scanDirectories(List<String> dirs) async {
         }
         if (type == null) continue;
         final stat = await entity.stat();
-        files.add(MediaFileModel(
-          path: entity.path,
-          type: type,
-          name: p.basename(entity.path),
-          dateModified: stat.modified,
-        ));
+        files.add(
+          MediaFileModel(
+            path: entity.path,
+            type: type,
+            name: p.basename(entity.path),
+            dateModified: stat.modified,
+          ),
+        );
       }
     } catch (_) {
       // Skip inaccessible directories
     }
   }
-  files.sort((a, b) =>
-      (b.dateModified ?? DateTime(0)).compareTo(a.dateModified ?? DateTime(0)));
+  files.sort(
+    (a, b) => (b.dateModified ?? DateTime(0)).compareTo(
+      a.dateModified ?? DateTime(0),
+    ),
+  );
   return files;
 }
 
@@ -107,7 +131,8 @@ List<MediaFileModel> _webDemoMediaFiles() {
       name: 'Lake.jpg',
     ),
     MediaFileModel(
-      path: 'https://flutter.github.io/assets-for-api-docs/assets/videos/'
+      path:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/'
           'bee.mp4',
       type: MediaFileType.video,
       name: 'bee.mp4',
@@ -116,7 +141,8 @@ List<MediaFileModel> _webDemoMediaFiles() {
           'bee.png',
     ),
     MediaFileModel(
-      path: 'https://flutter.github.io/assets-for-api-docs/assets/videos/'
+      path:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/'
           'butterfly.mp4',
       type: MediaFileType.video,
       name: 'butterfly.mp4',
@@ -130,13 +156,12 @@ List<MediaFileModel> _webDemoMediaFiles() {
 // ---------------------------------------------------------------------------
 // Provider
 // ---------------------------------------------------------------------------
-final mediaFilesServiceProvider = AsyncNotifierProvider<
-    MediaFilesServiceNotifier, List<MediaFileModel>>(
-  MediaFilesServiceNotifier.new,
-);
+final mediaFilesServiceProvider =
+    AsyncNotifierProvider<MediaFilesServiceNotifier, List<MediaFileModel>>(
+      MediaFilesServiceNotifier.new,
+    );
 
-class MediaFilesServiceNotifier
-    extends AsyncNotifier<List<MediaFileModel>> {
+class MediaFilesServiceNotifier extends AsyncNotifier<List<MediaFileModel>> {
   @override
   Future<List<MediaFileModel>> build() async {
     return _loadFiles();

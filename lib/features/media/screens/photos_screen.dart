@@ -25,11 +25,12 @@ class _PhotosScreenState extends ConsumerState<PhotosScreen> {
   int _selectedIndex = 0;
   final ScrollController _scrollController = ScrollController();
 
-  List<MediaFileModel> get _photos => ref
-      .watch(mediaFilesServiceProvider)
-      .value
-      ?.where((f) => f.type == MediaFileType.photo)
-      .toList() ??
+  List<MediaFileModel> get _photos =>
+      ref
+          .watch(mediaFilesServiceProvider)
+          .value
+          ?.where((f) => f.type == MediaFileType.photo)
+          .toList() ??
       [];
 
   @override
@@ -102,7 +103,8 @@ class _PhotosScreenState extends ConsumerState<PhotosScreen> {
   @override
   Widget build(BuildContext context) {
     final photosAsync = ref.watch(mediaFilesServiceProvider);
-    final photos = photosAsync.value
+    final photos =
+        photosAsync.value
             ?.where((f) => f.type == MediaFileType.photo)
             .toList() ??
         [];
@@ -154,7 +156,7 @@ class _PhotosScreenState extends ConsumerState<PhotosScreen> {
                                 color: isSelected
                                     ? CupertinoColors.systemBlue
                                     : CupertinoColors.systemBackground
-                                        .resolveFrom(context),
+                                          .resolveFrom(context),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 4,
@@ -171,9 +173,9 @@ class _PhotosScreenState extends ConsumerState<PhotosScreen> {
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, _, _) =>
                                                   const Icon(
-                                                CupertinoIcons.photo,
-                                                size: 38,
-                                              ),
+                                                    CupertinoIcons.photo,
+                                                    size: 38,
+                                                  ),
                                             )
                                           : Image.file(
                                               File(photo.path),
@@ -182,9 +184,9 @@ class _PhotosScreenState extends ConsumerState<PhotosScreen> {
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, _, _) =>
                                                   const Icon(
-                                                CupertinoIcons.photo,
-                                                size: 38,
-                                              ),
+                                                    CupertinoIcons.photo,
+                                                    size: 38,
+                                                  ),
                                             ),
                                     ),
                                     const SizedBox(width: 8),
@@ -196,7 +198,7 @@ class _PhotosScreenState extends ConsumerState<PhotosScreen> {
                                           color: isSelected
                                               ? CupertinoColors.white
                                               : CupertinoColors.label
-                                                  .resolveFrom(context),
+                                                    .resolveFrom(context),
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
