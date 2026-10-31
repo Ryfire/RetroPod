@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/services/audio_files_service.dart';
+import 'package:retropod/core/utils/directory_exclusion.dart';
 import 'package:retropod/features/settings/controller/exclude_directories_controller.dart';
 
 final filteredAudioFilesProvider =
@@ -17,10 +18,14 @@ final filteredAudioFilesProvider =
           .where((excludeDirectoryModel) => excludeDirectoryModel.isExcluded)
           .map((excludedDirectoryModel) => excludedDirectoryModel.directoryPath)
           .toSet();
+      final nameFilters = ref.watch(excludedNameFiltersProvider);
+
       final List<MusicMetadata> filteredList = [];
       for (final audioFileMetadata in audioFilesMetadata) {
-        if (!excludedParentDirectories.contains(
-          audioFileMetadata.parentDirectoryPath,
+        if (!isDirectoryExcluded(
+          directoryPath: audioFileMetadata.parentDirectoryPath,
+          excludedDirectoryPaths: excludedParentDirectories,
+          nameFilters: nameFilters,
         )) {
           filteredList.add(audioFileMetadata);
         }

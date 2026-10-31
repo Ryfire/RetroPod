@@ -39,6 +39,12 @@ import 'package:retropod/features/music/search/screens/search_more_options_modal
 import 'package:retropod/features/music/search/screens/search_screen.dart';
 import 'package:retropod/features/music/songs/screens/songs_more_options_modal.dart';
 import 'package:retropod/features/music/songs/screens/songs_screen.dart';
+import 'package:retropod/features/notes/models/note_file_model.dart';
+import 'package:retropod/features/notes/screens/note_more_options_modal.dart';
+import 'package:retropod/features/notes/screens/note_reader_screen.dart';
+import 'package:retropod/features/notes/screens/notes_bookmarks_screen.dart';
+import 'package:retropod/features/notes/screens/notes_screen.dart';
+import 'package:retropod/features/notes/screens/notes_search_screen.dart';
 import 'package:retropod/features/now_playing/screen/now_playing_more_options_modal.dart';
 import 'package:retropod/features/now_playing/screen/now_playing_screen.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
@@ -46,6 +52,8 @@ import 'package:retropod/features/settings/screens/about_screen.dart';
 import 'package:retropod/features/settings/screens/device_color_selection_screen.dart';
 import 'package:retropod/features/settings/screens/exclude_directories_screen.dart';
 import 'package:retropod/features/settings/screens/language_selection_screen.dart';
+import 'package:retropod/features/settings/screens/note_font_color_screen.dart';
+import 'package:retropod/features/settings/screens/note_font_size_screen.dart';
 import 'package:retropod/features/settings/screens/settings_preferences_screen.dart';
 import 'package:retropod/features/settings/screens/skin_selection_screen.dart';
 import 'package:retropod/features/sleep_timer/screens/sleep_timer_screen.dart';
@@ -58,6 +66,8 @@ enum Routes {
   language,
   deviceColor,
   deviceSkin,
+  noteFontColor,
+  noteFontSize,
   excludeDirectories,
   nowPlaying,
   nowPlayingMoreOptions,
@@ -87,6 +97,11 @@ enum Routes {
   extras,
   brick,
   musicQuiz,
+  notes,
+  notesSearch,
+  noteViewer,
+  noteMoreOptions,
+  notesBookmarks,
   media,
   photos,
   photoViewer,
@@ -114,6 +129,10 @@ enum Routes {
         return context.localization.deviceColorSettingTitle;
       case deviceSkin:
         return 'Skins';
+      case noteFontColor:
+        return context.localization.noteFontColorSettingTitle;
+      case noteFontSize:
+        return context.localization.noteFontSizeSettingTitle;
       case excludeDirectories:
         return context.localization.excludeDirectoriesScreenTitle;
       case nowPlaying:
@@ -170,6 +189,16 @@ enum Routes {
         return context.localization.brickGameTitle;
       case musicQuiz:
         return context.localization.musicQuizGameTitle;
+      case notes:
+        return context.localization.notesScreenTitle;
+      case notesSearch:
+        return context.localization.notesSearchTitle;
+      case noteViewer:
+        return context.localization.notesScreenTitle;
+      case noteMoreOptions:
+        return context.localization.notesScreenTitle;
+      case notesBookmarks:
+        return context.localization.notesBookmarksTitle;
       case media:
         return context.localization.mediaMenuTitle;
       case photos:
@@ -276,6 +305,20 @@ final routerProvider = Provider(
                         parentNavigatorKey: menuNavigatorKey,
                         pageBuilder: (context, state) =>
                             const CupertinoPage(child: SkinSelectionScreen()),
+                      ),
+                      GoRoute(
+                        path: Routes.noteFontColor.name,
+                        name: Routes.noteFontColor.name,
+                        parentNavigatorKey: menuNavigatorKey,
+                        pageBuilder: (context, state) =>
+                            const CupertinoPage(child: NoteFontColorScreen()),
+                      ),
+                      GoRoute(
+                        path: Routes.noteFontSize.name,
+                        name: Routes.noteFontSize.name,
+                        parentNavigatorKey: menuNavigatorKey,
+                        pageBuilder: (context, state) =>
+                            const CupertinoPage(child: NoteFontSizeScreen()),
                       ),
                       GoRoute(
                         path: Routes.excludeDirectories.name,
@@ -670,6 +713,55 @@ final routerProvider = Provider(
                     parentNavigatorKey: rootNavigatorKey,
                     pageBuilder: (context, state) =>
                         const CupertinoPage(child: MusicQuizScreen()),
+                  ),
+                  GoRoute(
+                    path: Routes.notes.name,
+                    name: Routes.notes.name,
+                    parentNavigatorKey: rootNavigatorKey,
+                    pageBuilder: (context, state) =>
+                        const CupertinoPage(child: NotesScreen()),
+                  ),
+                  GoRoute(
+                    path: Routes.notesSearch.name,
+                    name: Routes.notesSearch.name,
+                    parentNavigatorKey: rootNavigatorKey,
+                    pageBuilder: (context, state) =>
+                        const CupertinoPage(child: NotesSearchScreen()),
+                  ),
+                  GoRoute(
+                    path: Routes.notesBookmarks.name,
+                    name: Routes.notesBookmarks.name,
+                    parentNavigatorKey: rootNavigatorKey,
+                    pageBuilder: (context, state) =>
+                        const CupertinoPage(child: NotesBookmarksScreen()),
+                  ),
+                  GoRoute(
+                    path: Routes.noteViewer.name,
+                    name: Routes.noteViewer.name,
+                    parentNavigatorKey: rootNavigatorKey,
+                    pageBuilder: (context, state) {
+                      final note = state.extra as NoteFileModel?;
+                      return CupertinoPage(child: NoteReaderScreen(note: note));
+                    },
+                    routes: [
+                      GoRoute(
+                        path: Routes.noteMoreOptions.name,
+                        name: Routes.noteMoreOptions.name,
+                        parentNavigatorKey: rootNavigatorKey,
+                        pageBuilder: (context, state) {
+                          final (note, pageOffset) =
+                              state.extra as (NoteFileModel, int);
+                          return OptionsModalPage(
+                            context: context,
+                            title: Routes.noteMoreOptions.title(context),
+                            builder: (context) => NoteMoreOptionsModal(
+                              note: note,
+                              pageOffset: pageOffset,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

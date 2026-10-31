@@ -53,3 +53,8 @@ google_service_account.json
 **/fastlane/test_output
 /untranslated_messages.json
 /lib/l10n/generated/
+
+# Local development artifacts
+coverage/
+.playwright-mcp/
+session-*.md

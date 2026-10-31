@@ -1,8 +1,11 @@
+import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
+import 'package:retropod/features/settings/models/click_wheel_step.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
+import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 
@@ -11,6 +14,7 @@ class SettingsPreferencesModel {
   final DeviceColor deviceColor;
   final ClickWheelSize clickWheelSize;
   final ClickWheelSensitivity clickWheelSensitivity;
+  final ClickWheelStep clickWheelStep;
   final bool isTouchScreenEnabled;
   final RepeatMode repeatMode;
   final bool vibrate;
@@ -21,12 +25,15 @@ class SettingsPreferencesModel {
   final bool fetchOnlineMusic;
   final AppTheme appTheme;
   final DeviceSkin deviceSkin;
+  final NoteFontColor noteFontColor;
+  final int noteFontSize;
 
   SettingsPreferencesModel({
     required this.languageLocaleCode,
     required this.deviceColor,
     required this.clickWheelSize,
     required this.clickWheelSensitivity,
+    required this.clickWheelStep,
     required this.isTouchScreenEnabled,
     required this.repeatMode,
     required this.vibrate,
@@ -37,6 +44,8 @@ class SettingsPreferencesModel {
     required this.appTheme,
     this.fetchOnlineMusic = false,
     this.deviceSkin = DeviceSkin.classic,
+    this.noteFontColor = NoteFontColor.theme,
+    this.noteFontSize = Constants.defaultNoteFontSize,
   });
 
   SettingsPreferencesModel copyWith({
@@ -44,6 +53,7 @@ class SettingsPreferencesModel {
     DeviceColor? deviceColor,
     ClickWheelSize? clickWheelSize,
     ClickWheelSensitivity? clickWheelSensitivity,
+    ClickWheelStep? clickWheelStep,
     bool? isTouchScreenEnabled,
     RepeatMode? repeatMode,
     bool? vibrate,
@@ -54,6 +64,8 @@ class SettingsPreferencesModel {
     bool? fetchOnlineMusic,
     AppTheme? appTheme,
     DeviceSkin? deviceSkin,
+    NoteFontColor? noteFontColor,
+    int? noteFontSize,
   }) {
     return SettingsPreferencesModel(
       languageLocaleCode: languageLocaleCode ?? this.languageLocaleCode,
@@ -61,6 +73,7 @@ class SettingsPreferencesModel {
       clickWheelSize: clickWheelSize ?? this.clickWheelSize,
       clickWheelSensitivity:
           clickWheelSensitivity ?? this.clickWheelSensitivity,
+      clickWheelStep: clickWheelStep ?? this.clickWheelStep,
       isTouchScreenEnabled: isTouchScreenEnabled ?? this.isTouchScreenEnabled,
       repeatMode: repeatMode ?? this.repeatMode,
       vibrate: vibrate ?? this.vibrate,
@@ -71,6 +84,8 @@ class SettingsPreferencesModel {
       appTheme: appTheme ?? this.appTheme,
       fetchOnlineMusic: fetchOnlineMusic ?? this.fetchOnlineMusic,
       deviceSkin: deviceSkin ?? this.deviceSkin,
+      noteFontColor: noteFontColor ?? this.noteFontColor,
+      noteFontSize: noteFontSize ?? this.noteFontSize,
     );
   }
 
@@ -81,6 +96,7 @@ class SettingsPreferencesModel {
         other.deviceColor == deviceColor &&
         other.clickWheelSize == clickWheelSize &&
         other.clickWheelSensitivity == clickWheelSensitivity &&
+        other.clickWheelStep == clickWheelStep &&
         other.isTouchScreenEnabled == isTouchScreenEnabled &&
         other.repeatMode == repeatMode &&
         other.vibrate == vibrate &&
@@ -90,7 +106,9 @@ class SettingsPreferencesModel {
         other.immersiveMode == immersiveMode &&
         other.fetchOnlineMusic == fetchOnlineMusic &&
         other.deviceSkin == deviceSkin &&
-        other.appTheme == appTheme;
+        other.appTheme == appTheme &&
+        other.noteFontColor == noteFontColor &&
+        other.noteFontSize == noteFontSize;
   }
 
   @override
@@ -99,6 +117,7 @@ class SettingsPreferencesModel {
     deviceColor,
     clickWheelSize,
     clickWheelSensitivity,
+    clickWheelStep,
     isTouchScreenEnabled,
     repeatMode,
     vibrate,
@@ -109,5 +128,7 @@ class SettingsPreferencesModel {
     appTheme,
     fetchOnlineMusic,
     deviceSkin,
+    noteFontColor,
+    noteFontSize,
   );
 }

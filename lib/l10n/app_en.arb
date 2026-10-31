@@ -504,6 +504,10 @@
   "@clickWheelSensitivitySettingTitle": {
     "description": "The title of the click wheel sensitivity setting"
   },
+  "clickWheelStepSettingTitle": "Click Wheel Step",
+  "@clickWheelStepSettingTitle": {
+    "description": "The title of the click wheel step setting"
+  },
   "small": "Small",
   "@small": {
     "description": "The text for small click wheel size"
@@ -511,6 +515,10 @@
   "medium": "Medium",
   "@medium": {
     "description": "The text for medium click wheel size and sensitivity"
+  },
+  "mediumHigh": "Medium High",
+  "@mediumHigh": {
+    "description": "The text for medium high click wheel sensitivity"
   },
   "large": "Large",
   "@large": {
@@ -527,6 +535,26 @@
   "high": "High",
   "@high": {
     "description": "The text for high click wheel sensitivity"
+  },
+  "coarse": "Coarse",
+  "@coarse": {
+    "description": "The text for coarse click wheel step"
+  },
+  "normal": "Normal",
+  "@normal": {
+    "description": "The text for normal click wheel step"
+  },
+  "fine": "Fine",
+  "@fine": {
+    "description": "The text for fine click wheel step"
+  },
+  "veryFine": "Very Fine",
+  "@veryFine": {
+    "description": "The text for very fine click wheel step"
+  },
+  "ultraFine": "Ultra Fine",
+  "@ultraFine": {
+    "description": "The text for ultra fine click wheel step"
   },
   "volumeModeSettingTitle": "Volume Mode",
   "@volumeModeSettingTitle": {
@@ -547,6 +575,18 @@
   "excludeDirectoriesScreenTitle": "Exclude Directories",
   "@excludeDirectoriesScreenTitle": {
     "description": "The title of the exclude directories screen"
+  },
+  "addFolderNameFilterTile": "Add Folder Filter",
+  "@addFolderNameFilterTile": {
+    "description": "The text of the tile that starts adding a folder filter on the exclude directories screen"
+  },
+  "folderNameFilterHint": "Type a folder name to hide it and all its subfolders",
+  "@folderNameFilterHint": {
+    "description": "The hint shown while typing a folder filter on the exclude directories screen"
+  },
+  "noFoldersMatchFilter": "No Matching Folders",
+  "@noFoldersMatchFilter": {
+    "description": "Shown when no folders match the folder filter being typed"
   },
   "extrasMenuTitle": "Extras",
   "@extrasMenuTitle": {
@@ -657,6 +697,103 @@
         "type": "int"
       }
     }
+  },
+  "notesScreenTitle": "Notes",
+  "@notesScreenTitle": {
+    "description": "The title of the Notes screen in Extras"
+  },
+  "notesEmpty": "No notes found",
+  "@notesEmpty": {
+    "description": "Shown when no text files are found on the device"
+  },
+  "notesRefreshTitle": "Refresh Notes",
+  "@notesRefreshTitle": {
+    "description": "Bottom tile that rescans the notes folder for changes"
+  },
+  "notePageIndicator": "Page {current} of {total}",
+  "@notePageIndicator": {
+    "description": "Page counter in the note reader",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "noteTooLarge": "Note is too large to display fully",
+  "@noteTooLarge": {
+    "description": "Shown when a note file exceeds the readable size limit"
+  },
+  "notesSearchTitle": "Search Notes",
+  "@notesSearchTitle": {
+    "description": "The title of the Notes search screen"
+  },
+  "notesSearchPrompt": "Search notes",
+  "@notesSearchPrompt": {
+    "description": "Prompt shown in the notes search input tile"
+  },
+  "notesSearchResultsText": "Results:",
+  "@notesSearchResultsText": {
+    "description": "Prefix shown before the notes search result count"
+  },
+  "notesSearchEmpty": "No matching notes",
+  "@notesSearchEmpty": {
+    "description": "Shown when notes search has no matches"
+  },
+  "noteFontIndicator": "Font: {size}",
+  "@noteFontIndicator": {
+    "description": "Shown briefly when changing the note reader font size",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "noteFontColorSettingTitle": "Note Font Color",
+  "@noteFontColorSettingTitle": {
+    "description": "The setting title for the note reader font color"
+  },
+  "noteFontSizeSettingTitle": "Note Font Size",
+  "@noteFontSizeSettingTitle": {
+    "description": "The setting title for the note reader font size"
+  },
+  "defaultFontColor": "Default",
+  "@defaultFontColor": {
+    "description": "The option to keep note text in the theme default color"
+  },
+  "noteMenuBookmark": "Add Bookmark",
+  "@noteMenuBookmark": {
+    "description": "The option in the note reader menu to bookmark the current page"
+  },
+  "noteMenuRemoveBookmark": "Remove Bookmark",
+  "@noteMenuRemoveBookmark": {
+    "description": "The option in the note reader menu to remove the saved bookmark"
+  },
+  "noteBookmarkIndicator": "Bookmarked page {page} of {total}",
+  "@noteBookmarkIndicator": {
+    "description": "Shown briefly when the note reader opens at a bookmarked page",
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "noteLoadError": "Could not load note",
+  "@noteLoadError": {
+    "description": "Shown when a note file cannot be read in the note reader"
+  },
+  "notesBookmarksTitle": "Bookmarks",
+  "@notesBookmarksTitle": {
+    "description": "The title of the saved note bookmarks screen"
+  },
+  "notesBookmarksEmpty": "No bookmarks",
+  "@notesBookmarksEmpty": {
+    "description": "Shown when no notes have a saved bookmark"
   }
 }
 

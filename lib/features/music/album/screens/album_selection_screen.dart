@@ -7,6 +7,7 @@ import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/providers/filtered_audio_files_provider.dart';
 import 'package:retropod/core/widgets/empty_state_widget.dart';
+import 'package:retropod/core/widgets/fast_scroll_indicator.dart';
 import 'package:retropod/features/custom_screen_elements/custom_screen.dart';
 import 'package:retropod/features/music/album/models/album_model.dart';
 import 'package:retropod/features/music/album/providers/album_details_provider.dart';
@@ -93,49 +94,56 @@ class _AlbumsSelectionScreenState extends ConsumerState<AlbumsSelectionScreen>
         children: [
           StatusBar(title: Routes.albums.title(context)),
           Flexible(
-            child: CupertinoScrollbar(
-              controller: scrollController,
-              child: ListView.builder(
+            child: FastScrollIndicator(
+              wheelScrollIndex: wheelScrollIndex,
+              itemCount: displayItems.length + 1,
+              itemExtent: displayTileHeight,
+              labelAt: (index) =>
+                  index == 0 ? '' : displayItems[index - 1].albumName,
+              child: CupertinoScrollbar(
                 controller: scrollController,
-                itemCount: displayItems.length + 1,
-                prototypeItem: AlbumListTile(
-                  albumDetails: AlbumModel(
-                    albumName: '',
-                    albumArtistName: '',
-                    albumSongs: [],
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: displayItems.length + 1,
+                  prototypeItem: AlbumListTile(
+                    albumDetails: AlbumModel(
+                      albumName: '',
+                      albumArtistName: '',
+                      albumSongs: [],
+                    ),
+                    isSelected: false,
+                    onTap: () {},
+                    onLongPress: () {},
                   ),
-                  isSelected: false,
-                  onTap: () {},
-                  onLongPress: () {},
-                ),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    final allSongs = ref
-                        .read(filteredAudioFilesProvider)
-                        .requireValue;
-                    return AlbumListTile(
-                      albumDetails: AlbumModel(
-                        albumName: context.localization.allSongs,
-                        albumArtistName: context.localization.nSongs(
-                          allSongs.length,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      final allSongs = ref
+                          .read(filteredAudioFilesProvider)
+                          .requireValue;
+                      return AlbumListTile(
+                        albumDetails: AlbumModel(
+                          albumName: context.localization.allSongs,
+                          albumArtistName: context.localization.nSongs(
+                            allSongs.length,
+                          ),
+                          albumSongs: allSongs,
                         ),
-                        albumSongs: allSongs,
-                      ),
-                      isSelected: selectedDisplayItem == 0,
-                      isAllSongsAlbum: true,
-                      onTap: () async => _navigateToAlbumSelectionScreen(0),
-                      onLongPress: () {},
-                    );
-                  }
+                        isSelected: selectedDisplayItem == 0,
+                        isAllSongsAlbum: true,
+                        onTap: () async => _navigateToAlbumSelectionScreen(0),
+                        onLongPress: () {},
+                      );
+                    }
 
-                  return AlbumListTile(
-                    albumDetails: displayItems[index - 1],
-                    isSelected: selectedDisplayItem == index,
-                    onTap: () async => _navigateToAlbumSelectionScreen(index),
-                    onLongPress: () async =>
-                        _navigateToAlbumMoreOptionsScreen(index),
-                  );
-                },
+                    return AlbumListTile(
+                      albumDetails: displayItems[index - 1],
+                      isSelected: selectedDisplayItem == index,
+                      onTap: () async => _navigateToAlbumSelectionScreen(index),
+                      onLongPress: () async =>
+                          _navigateToAlbumMoreOptionsScreen(index),
+                    );
+                  },
+                ),
               ),
             ),
           ),

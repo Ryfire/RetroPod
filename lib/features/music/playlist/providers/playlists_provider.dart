@@ -4,6 +4,8 @@ import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/features/music/album/models/album_model.dart';
 import 'package:retropod/features/music/playlist/models/playlist_model.dart';
+import 'package:retropod/features/music/playlist/providers/on_the_go_playlist_provider.dart';
+import 'package:retropod/features/music/playlist/providers/starred_playlist_provider.dart';
 
 final playlistsProvider =
     NotifierProvider<PlaylistsNotifier, List<PlaylistModel>>(
@@ -18,13 +20,18 @@ class PlaylistsNotifier extends Notifier<List<PlaylistModel>> {
   @override
   List<PlaylistModel> build() {
     return [
-      PlaylistModel(name: 'On The Go', songs: []),
+      ref.watch(onTheGoPlaylistProvider),
+      ref.watch(starredPlaylistProvider),
       ..._playlistBox.values,
     ];
   }
 
   void refreshProvider() {
-    state = [state[0], ..._playlistBox.values];
+    state = [
+      ref.read(onTheGoPlaylistProvider),
+      ref.read(starredPlaylistProvider),
+      ..._playlistBox.values,
+    ];
   }
 
   Future<void> saveNewPlaylist({
@@ -48,8 +55,8 @@ class PlaylistsNotifier extends Notifier<List<PlaylistModel>> {
     required dynamic playlistKey,
     required String newPlaylistName,
   }) async {
-    // Can't rename the on-the-go-playlist option
-    if (playlistKey == null) {
+    // Can't rename the on-the-go or starred playlist options
+    if (playlistKey == null || playlistKey == PlaylistModel.starredKey) {
       return;
     } else {
       final currentPlaylist = _playlistBox.get(playlistKey);
@@ -64,51 +71,54 @@ class PlaylistsNotifier extends Notifier<List<PlaylistModel>> {
   }
 
   Future<void> clearPlaylist({required dynamic playlistKey}) async {
-    // Can't remove the on-the-go-playlist option
-    if (playlistKey == null) {
-      Future.delayed(const Duration(milliseconds: 350), () {
-        state = [
-          for (final playlist in state)
-            if (playlist.key == null)
-              playlist.copyWith(songs: [])
-            else
-              playlist,
-        ];
-      });
+    // Can't clear the starred playlist option
+    if (playlistKey == PlaylistModel.starredKey) {
       return;
-    } else {
-      Future.delayed(const Duration(seconds: 1), () async {
-        await _playlistBox.delete(playlistKey);
-        refreshProvider();
-      });
     }
+
+    // Clear the on-the-go playlist option
+    if (playlistKey == null) {
+      ref.read(onTheGoPlaylistProvider.notifier).clearPlaylist();
+      return;
+    }
+
+    Future.delayed(const Duration(seconds: 1), () async {
+      await _playlistBox.delete(playlistKey);
+      refreshProvider();
+    });
   }
 
   void addSongToPlaylist(MusicMetadata? song) {
-    if (song != null) {
-      state = [
-        state[0].addSongToPlaylist(song),
-        if (state.length > 1) ...state.sublist(1),
-      ];
-    }
+    ref.read(onTheGoPlaylistProvider.notifier).addSongToPlaylist(song);
   }
 
   void addAlbumToPlaylist(AlbumModel? albumDetail) {
-    if (albumDetail != null) {
-      albumDetail.albumSongs.forEach(addSongToPlaylist);
-    }
+    ref.read(onTheGoPlaylistProvider.notifier).addAlbumToPlaylist(albumDetail);
   }
 
   Future<void> removeSongFromPlaylist({
     required PlaylistModel playlistModel,
     MusicMetadata? song,
   }) async {
-    if (song != null) {
-      await _playlistBox.put(
-        playlistModel.key,
-        playlistModel.removeSongFromPlaylist(song),
-      );
-      refreshProvider();
+    if (song == null) {
+      return;
     }
+
+    // Virtual playlists aren't backed by the box: songs are removed from the
+    // on-the-go state, while starred songs are derived from ratings and can
+    // only be removed by un-rating them
+    if (playlistModel.key == null ||
+        playlistModel.key == PlaylistModel.starredKey) {
+      if (playlistModel.name == 'On The Go') {
+        ref.read(onTheGoPlaylistProvider.notifier).removeSongFromPlaylist(song);
+      }
+      return;
+    }
+
+    await _playlistBox.put(
+      playlistModel.key,
+      playlistModel.removeSongFromPlaylist(song),
+    );
+    refreshProvider();
   }
 }

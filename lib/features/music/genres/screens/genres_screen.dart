@@ -5,6 +5,7 @@ import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/widgets/display_list_tile.dart';
 import 'package:retropod/core/widgets/empty_state_widget.dart';
+import 'package:retropod/core/widgets/fast_scroll_indicator.dart';
 import 'package:retropod/features/custom_screen_elements/custom_screen.dart';
 import 'package:retropod/features/music/genres/providers/genres_provider.dart';
 import 'package:retropod/features/status_bar/widgets/status_bar.dart';
@@ -57,19 +58,25 @@ class _GenresScreenState extends ConsumerState<GenresScreen> with CustomScreen {
         children: [
           StatusBar(title: Routes.genres.title(context)),
           Flexible(
-            child: CupertinoScrollbar(
-              controller: scrollController,
-              child: ListView.builder(
+            child: FastScrollIndicator(
+              wheelScrollIndex: wheelScrollIndex,
+              itemCount: displayItems.length,
+              itemExtent: displayTileHeight,
+              labelAt: (index) => displayItems[index],
+              child: CupertinoScrollbar(
                 controller: scrollController,
-                itemCount: displayItems.length,
-                prototypeItem: const DisplayListTile(
-                  text: '',
-                  isSelected: false,
-                ),
-                itemBuilder: (context, index) => DisplayListTile(
-                  text: displayItems[index],
-                  isSelected: selectedDisplayItem == index,
-                  onTap: () => _selectGenre(index),
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: displayItems.length,
+                  prototypeItem: const DisplayListTile(
+                    text: '',
+                    isSelected: false,
+                  ),
+                  itemBuilder: (context, index) => DisplayListTile(
+                    text: displayItems[index],
+                    isSelected: selectedDisplayItem == index,
+                    onTap: () => _selectGenre(index),
+                  ),
                 ),
               ),
             ),

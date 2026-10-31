@@ -23,8 +23,11 @@ enum _SettingsDisplayItems {
   appTheme,
   deviceColor,
   deviceSkin,
+  noteFontColor,
+  noteFontSize,
   clickWheelSize,
   clickWheelSensitivity,
+  clickWheelStep,
   isTouchScreenEnabled,
   vibrate,
   clickWheelSound,
@@ -54,10 +57,16 @@ enum _SettingsDisplayItems {
         return context.localization.deviceColorSettingTitle;
       case deviceSkin:
         return 'Skins';
+      case noteFontColor:
+        return context.localization.noteFontColorSettingTitle;
+      case noteFontSize:
+        return context.localization.noteFontSizeSettingTitle;
       case clickWheelSize:
         return context.localization.clickWheelSizeSettingTitle;
       case clickWheelSensitivity:
         return context.localization.clickWheelSensitivitySettingTitle;
+      case clickWheelStep:
+        return context.localization.clickWheelStepSettingTitle;
       case volumeMode:
         return context.localization.volumeModeSettingTitle;
       case vibrate:
@@ -127,6 +136,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case _SettingsDisplayItems.deviceSkin:
         context.goNamed(Routes.deviceSkin.name);
         break;
+      case _SettingsDisplayItems.noteFontColor:
+        context.goNamed(Routes.noteFontColor.name);
+        break;
+      case _SettingsDisplayItems.noteFontSize:
+        context.goNamed(Routes.noteFontSize.name);
+        break;
       case _SettingsDisplayItems.clickWheelSize:
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
@@ -136,6 +151,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
             .toggleClickWheelSensitivity();
+        break;
+      case _SettingsDisplayItems.clickWheelStep:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .toggleClickWheelStep();
         break;
       case _SettingsDisplayItems.isTouchScreenEnabled:
         await ref
@@ -219,10 +239,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.deviceColor.title(context);
       case _SettingsDisplayItems.deviceSkin:
         return settingsState.deviceSkin.title(context);
+      case _SettingsDisplayItems.noteFontColor:
+        return settingsState.noteFontColor.title(context);
+      case _SettingsDisplayItems.noteFontSize:
+        return '${settingsState.noteFontSize}';
       case _SettingsDisplayItems.clickWheelSize:
         return settingsState.clickWheelSize.title(context);
       case _SettingsDisplayItems.clickWheelSensitivity:
         return settingsState.clickWheelSensitivity.title(context);
+      case _SettingsDisplayItems.clickWheelStep:
+        return settingsState.clickWheelStep.title(context);
       case _SettingsDisplayItems.appTheme:
         return settingsState.appTheme.title(context);
       case _SettingsDisplayItems.repeat:
@@ -258,6 +284,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
             SplitScreenType.deviceSkin;
         break;
+      case _SettingsDisplayItems.noteFontColor:
+        ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
+            SplitScreenType.noteFontColor;
+        break;
+      case _SettingsDisplayItems.noteFontSize:
+        ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
+            SplitScreenType.noteFontSize;
+        break;
       case _SettingsDisplayItems.appTheme:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
             SplitScreenType.appTheme;
@@ -269,6 +303,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case _SettingsDisplayItems.clickWheelSensitivity:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
             SplitScreenType.clickWheelSensitivity;
+        break;
+      case _SettingsDisplayItems.clickWheelStep:
+        ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
+            SplitScreenType.clickWheelStep;
         break;
       case _SettingsDisplayItems.isTouchScreenEnabled:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =

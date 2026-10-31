@@ -8,6 +8,18 @@ import 'package:retropod/features/device/models/device_action.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
 import 'package:vibration/vibration.dart';
 
+final clickWheelGestureProvider =
+    NotifierProvider<ClickWheelGestureNotifier, bool>(
+      ClickWheelGestureNotifier.new,
+    );
+
+class ClickWheelGestureNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  set active(bool value) => state = value;
+}
+
 final deviceButtonsServiceProvider =
     NotifierProvider<DeviceButtonsServiceNotifier, DeviceAction?>(
       DeviceButtonsServiceNotifier.new,

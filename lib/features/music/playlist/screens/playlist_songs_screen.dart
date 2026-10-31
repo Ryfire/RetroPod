@@ -6,10 +6,12 @@ import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
 import 'package:retropod/core/widgets/empty_state_widget.dart';
+import 'package:retropod/core/widgets/fast_scroll_indicator.dart';
 import 'package:retropod/features/custom_screen_elements/custom_screen.dart';
 import 'package:retropod/features/music/playlist/models/playlist_model.dart';
 import 'package:retropod/features/music/playlist/models/playlist_option_type.dart';
 import 'package:retropod/features/music/playlist/providers/playlists_provider.dart';
+import 'package:retropod/features/music/playlist/providers/starred_playlist_provider.dart';
 import 'package:retropod/features/music/playlist/widgets/playlist_option_list_tile.dart';
 import 'package:retropod/features/music/playlist/widgets/playlist_song_list_tile.dart';
 import 'package:retropod/features/now_playing/provider/now_playing_details_provider.dart';
@@ -32,18 +34,24 @@ class _PlaylistsSongsScreenState extends ConsumerState<PlaylistSongsScreen>
   @override
   double get displayTileHeight => 54;
 
-  @override
-  int get extraDisplayItems => 2;
+  // The starred playlist is derived from song ratings, so it has no
+  // save/rename and clear option rows
+  bool get isStarredPlaylist => widget.playlistKey == PlaylistModel.starredKey;
 
   @override
-  List<MusicMetadata> get displayItems => ref
-      .watch(playlistsProvider)
-      .firstWhere((e) => e.key == widget.playlistKey)
-      .songs;
+  int get extraDisplayItems => isStarredPlaylist ? 0 : 2;
 
-  PlaylistModel get playlist => ref
-      .read(playlistsProvider)
-      .firstWhere((e) => e.key == widget.playlistKey);
+  PlaylistModel get playlist {
+    if (isStarredPlaylist) {
+      return ref.watch(starredPlaylistProvider);
+    }
+    return ref
+        .watch(playlistsProvider)
+        .firstWhere((e) => e.key == widget.playlistKey);
+  }
+
+  @override
+  List<MusicMetadata> get displayItems => playlist.songs;
 
   @override
   Future<void> onSelectPressed() => _performAction(selectedDisplayItem);
@@ -53,60 +61,72 @@ class _PlaylistsSongsScreenState extends ConsumerState<PlaylistSongsScreen>
       _performLongPressAction(selectedDisplayItem);
 
   Future<void> _performAction(int index) async {
-    final isSavingEmptyOnTheGoPlaylist =
-        index == 0 && widget.playlistKey == null && displayItems.isEmpty;
-    if (isSavingEmptyOnTheGoPlaylist) {
-      return;
-    }
+    if (!isStarredPlaylist) {
+      final isSavingEmptyOnTheGoPlaylist =
+          index == 0 && widget.playlistKey == null && displayItems.isEmpty;
+      if (isSavingEmptyOnTheGoPlaylist) {
+        return;
+      }
 
-    setState(() => selectedDisplayItem = index);
-    if (index == 0) {
-      if (widget.playlistKey == null) {
+      setState(() => selectedDisplayItem = index);
+      if (index == 0) {
+        if (widget.playlistKey == null) {
+          await ref
+              .read(playlistsProvider.notifier)
+              .saveNewPlaylist(
+                newPlaylistPlaceholderString: context.localization.newPlaylist,
+                songs: playlist.songs,
+              );
+          if (mounted) {
+            context.pop();
+          }
+        }
+        // If the playlist is not on-the-go, it means we are renaming an existing playlist
+        else {
+          final newPlaylistName = await context.pushNamed(
+            Routes.playlistRename.name,
+            extra: playlist.name,
+          );
+          if (newPlaylistName != null &&
+              newPlaylistName is String &&
+              newPlaylistName.isNotEmpty) {
+            await ref
+                .read(playlistsProvider.notifier)
+                .renamePlaylist(
+                  playlistKey: widget.playlistKey,
+                  newPlaylistName: newPlaylistName,
+                );
+          }
+        }
+        return;
+      } else if (index == 1) {
         await ref
             .read(playlistsProvider.notifier)
-            .saveNewPlaylist(
-              newPlaylistPlaceholderString: context.localization.newPlaylist,
-              songs: playlist.songs,
-            );
+            .clearPlaylist(playlistKey: widget.playlistKey);
         if (mounted) {
           context.pop();
         }
+        return;
       }
-      // If the playlist is not on-the-go, it means we are renaming an existing playlist
-      else {
-        final newPlaylistName = await context.pushNamed(
-          Routes.playlistRename.name,
-          extra: playlist.name,
-        );
-        if (newPlaylistName != null &&
-            newPlaylistName is String &&
-            newPlaylistName.isNotEmpty) {
-          await ref
-              .read(playlistsProvider.notifier)
-              .renamePlaylist(
-                playlistKey: widget.playlistKey,
-                newPlaylistName: newPlaylistName,
-              );
-        }
-      }
-    } else if (index == 1) {
-      await ref
-          .read(playlistsProvider.notifier)
-          .clearPlaylist(playlistKey: widget.playlistKey);
-      if (mounted) {
-        context.pop();
-      }
-    } else {
-      await ref
-          .read(audioPlayerServiceProvider.notifier)
-          .playPlaylist(playlistDetail: playlist, songIndex: index - 2);
-      if (mounted) {
-        await context.pushNamed(Routes.nowPlaying.name);
-      }
+    }
+
+    // Starred songs start at index 0, other playlists have 2 option rows
+    final songIndex = isStarredPlaylist ? index : index - 2;
+    setState(() => selectedDisplayItem = index);
+    await ref
+        .read(audioPlayerServiceProvider.notifier)
+        .playPlaylist(playlistDetail: playlist, songIndex: songIndex);
+    if (mounted) {
+      await context.pushNamed(Routes.nowPlaying.name);
     }
   }
 
   Future<void> _performLongPressAction(int index) async {
+    // Starred songs can't be removed individually, un-rate the song instead
+    if (isStarredPlaylist) {
+      return;
+    }
+
     if (displayItems.isEmpty) return;
     setState(() => selectedDisplayItem = index);
     if (index < 2) {
@@ -135,6 +155,8 @@ class _PlaylistsSongsScreenState extends ConsumerState<PlaylistSongsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final int optionRowCount = isStarredPlaylist ? 0 : 2;
+
     if (displayItems.isEmpty) {
       return CupertinoPageScaffold(
         child: Column(
@@ -159,43 +181,60 @@ class _PlaylistsSongsScreenState extends ConsumerState<PlaylistSongsScreen>
         children: [
           StatusBar(title: playlist.name),
           Flexible(
-            child: CupertinoScrollbar(
-              controller: scrollController,
-              child: ListView.builder(
+            child: FastScrollIndicator(
+              wheelScrollIndex: wheelScrollIndex,
+              itemCount: displayItems.length + optionRowCount,
+              itemExtent: displayTileHeight,
+              labelAt: (index) => index < optionRowCount
+                  ? ''
+                  : displayItems[index - optionRowCount].getTrackName,
+              child: CupertinoScrollbar(
                 controller: scrollController,
-                itemCount: displayItems.length + 2,
-                prototypeItem: PlaylistOptionListTile(
-                  onTap: () {},
-                  isSelected: false,
-                  type: PlaylistOptionType.savePlaylist,
-                ),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return PlaylistOptionListTile(
-                      onTap: () async => _performAction(0),
-                      isSelected: selectedDisplayItem == 0,
-                      type: widget.playlistKey == null
-                          ? PlaylistOptionType.savePlaylist
-                          : PlaylistOptionType.renamePlaylist,
-                    );
-                  } else if (index == 1) {
-                    return PlaylistOptionListTile(
-                      onTap: () async => _performAction(1),
-                      isSelected: selectedDisplayItem == 1,
-                      type: PlaylistOptionType.clearPlaylist,
-                    );
-                  }
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: displayItems.length + optionRowCount,
+                  prototypeItem: isStarredPlaylist
+                      ? PlaylistSongListTile(
+                          songMetadata: displayItems.first,
+                          isSelected: false,
+                          isCurrentlyPlaying: false,
+                          onTap: () {},
+                          onLongPress: () {},
+                        )
+                      : PlaylistOptionListTile(
+                          onTap: () {},
+                          isSelected: false,
+                          type: PlaylistOptionType.savePlaylist,
+                        ),
+                  itemBuilder: (context, index) {
+                    if (index == 0 && !isStarredPlaylist) {
+                      return PlaylistOptionListTile(
+                        onTap: () async => _performAction(0),
+                        isSelected: selectedDisplayItem == 0,
+                        type: widget.playlistKey == null
+                            ? PlaylistOptionType.savePlaylist
+                            : PlaylistOptionType.renamePlaylist,
+                      );
+                    } else if (index == 1 && !isStarredPlaylist) {
+                      return PlaylistOptionListTile(
+                        onTap: () async => _performAction(1),
+                        isSelected: selectedDisplayItem == 1,
+                        type: PlaylistOptionType.clearPlaylist,
+                      );
+                    }
 
-                  return PlaylistSongListTile(
-                    songMetadata: displayItems[index - 2],
-                    isSelected: selectedDisplayItem == index,
-                    isCurrentlyPlaying:
-                        currentlyPlayingOriginalIndex ==
-                        displayItems[index - 2].originalSongIndex,
-                    onTap: () async => _performAction(index),
-                    onLongPress: () async => _performLongPressAction(index),
-                  );
-                },
+                    return PlaylistSongListTile(
+                      songMetadata: displayItems[index - optionRowCount],
+                      isSelected: selectedDisplayItem == index,
+                      isCurrentlyPlaying:
+                          currentlyPlayingOriginalIndex ==
+                          displayItems[index - optionRowCount]
+                              .originalSongIndex,
+                      onTap: () async => _performAction(index),
+                      onLongPress: () async => _performLongPressAction(index),
+                    );
+                  },
+                ),
               ),
             ),
           ),

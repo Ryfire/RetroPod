@@ -11,7 +11,8 @@ import 'package:retropod/features/status_bar/widgets/status_bar.dart';
 
 enum _GamesListDisplayItems {
   brick,
-  musicQuiz;
+  musicQuiz,
+  notes;
 
   String title(BuildContext context) {
     switch (this) {
@@ -19,6 +20,8 @@ enum _GamesListDisplayItems {
         return context.localization.brickGameTitle;
       case musicQuiz:
         return context.localization.musicQuizGameTitle;
+      case notes:
+        return context.localization.notesScreenTitle;
     }
   }
 }
@@ -51,6 +54,9 @@ class _GamesMenuScreenState extends ConsumerState<GamesMenuScreen>
         break;
       case _GamesListDisplayItems.musicQuiz:
         await context.pushNamed(Routes.musicQuiz.name);
+        break;
+      case _GamesListDisplayItems.notes:
+        await context.pushNamed(Routes.notes.name);
         break;
     }
   }

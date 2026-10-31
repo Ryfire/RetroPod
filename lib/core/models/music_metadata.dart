@@ -126,8 +126,13 @@ class MusicMetadata extends HiveObject {
         normalizeMetadataString(audioMetadata.artist) ?? "Unknown Artist";
     final List<String> trackArtistNames = splitArtistNames(artist);
 
+    final String? tagTitle = normalizeMetadataString(audioMetadata.title);
+    final String? fallbackTitle = tagTitle != null && tagTitle.trim().isNotEmpty
+        ? tagTitle
+        : _titleFromFileName(audioMetadata.file.path);
+
     return MusicMetadata(
-      trackName: normalizeMetadataString(audioMetadata.title) ?? "Unknown Song",
+      trackName: fallbackTitle ?? "Unknown Song",
       trackArtistNames: trackArtistNames,
       albumName:
           normalizeMetadataString(audioMetadata.album) ?? "Unknown Album",
@@ -147,6 +152,19 @@ class MusicMetadata extends HiveObject {
       originalSongIndex: originalSongIndex,
       lyrics: lyricsOverride ?? audioMetadata.lyrics,
     );
+  }
+
+  static String? _titleFromFileName(String path) {
+    final String fileName = path.replaceAll('\\', '/').split('/').last.trim();
+    if (fileName.isEmpty) {
+      return null;
+    }
+    final int dotIndex = fileName.lastIndexOf('.');
+    final String baseName = dotIndex > 0
+        ? fileName.substring(0, dotIndex)
+        : fileName;
+    final String trimmed = baseName.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 
   factory MusicMetadata.fromMap(Map<String, dynamic> map) => MusicMetadata(
@@ -337,34 +355,7 @@ class MusicMetadata extends HiveObject {
 
   String? get parentDirectoryPath {
     if (filePath == null) return null;
-
-    // Normalize separators to forward slash for processing
-    String normalizedPath = filePath!.replaceAll('\\', '/');
-
-    // Remove trailing slash if present
-    if (normalizedPath.endsWith('/')) {
-      normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
-    }
-
-    // Find the last separator index
-    final int lastSeparatorIndex = normalizedPath.lastIndexOf('/');
-
-    // If no separator found, return root (or empty string)
-    if (lastSeparatorIndex == -1) return null;
-
-    String parent = normalizedPath.substring(0, lastSeparatorIndex);
-
-    // For Windows: if the path is like C:/folder, preserve the drive letter and slash
-    if (parent.length == 2 && parent[1] == ':') {
-      parent += '/';
-    }
-
-    // Restore original backslashes on Windows if needed
-    if (filePath!.contains('\\')) {
-      parent = parent.replaceAll('/', '\\');
-    }
-
-    return parent;
+    return parentDirectoryPathOf(filePath!);
   }
 
   @override
@@ -423,4 +414,27 @@ int? parseInteger(dynamic value) {
     } catch (_) {}
   }
   return null;
+}
+
+String? parentDirectoryPathOf(String filePath) {
+  String normalizedPath = filePath.replaceAll('\\', '/');
+
+  if (normalizedPath.endsWith('/')) {
+    normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
+  }
+
+  final int lastSeparatorIndex = normalizedPath.lastIndexOf('/');
+  if (lastSeparatorIndex == -1) return null;
+
+  String parent = normalizedPath.substring(0, lastSeparatorIndex);
+
+  if (parent.length == 2 && parent[1] == ':') {
+    parent += '/';
+  }
+
+  if (filePath.contains('\\')) {
+    parent = parent.replaceAll('/', '\\');
+  }
+
+  return parent;
 }

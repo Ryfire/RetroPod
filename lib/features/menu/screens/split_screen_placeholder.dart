@@ -125,6 +125,18 @@ class _SplitScreenPlaceholderState extends ConsumerState<SplitScreenPlaceholder>
           icon: CupertinoIcons.paintbrush,
           contentText: currentSettings.deviceSkin.title(context),
         );
+      } else if (splitScreenType == SplitScreenType.noteFontColor) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.noteFontColorSettingTitle,
+          icon: CupertinoIcons.paintbrush,
+          contentText: currentSettings.noteFontColor.title(context),
+        );
+      } else if (splitScreenType == SplitScreenType.noteFontSize) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.noteFontSizeSettingTitle,
+          icon: CupertinoIcons.textformat_size,
+          contentText: '${currentSettings.noteFontSize}',
+        );
       } else if (splitScreenType == SplitScreenType.clickWheelSize) {
         splitScreenWidget = IconPreviewWidget(
           titleText: context.localization.clickWheelSizeSettingTitle,
@@ -136,6 +148,12 @@ class _SplitScreenPlaceholderState extends ConsumerState<SplitScreenPlaceholder>
           titleText: context.localization.clickWheelSensitivitySettingTitle,
           icon: CupertinoIcons.memories_badge_plus,
           contentText: currentSettings.clickWheelSensitivity.title(context),
+        );
+      } else if (splitScreenType == SplitScreenType.clickWheelStep) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.clickWheelStepSettingTitle,
+          icon: CupertinoIcons.gauge,
+          contentText: currentSettings.clickWheelStep.title(context),
         );
       } else if (splitScreenType == SplitScreenType.touchScreen) {
         splitScreenWidget = IconPreviewWidget(

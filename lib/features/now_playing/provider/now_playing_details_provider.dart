@@ -4,9 +4,9 @@ import 'package:just_audio/just_audio.dart';
 import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/providers/filtered_audio_files_provider.dart';
+import 'package:retropod/core/services/audio_files_service.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
 import 'package:retropod/features/music/album/providers/album_details_provider.dart';
-import 'package:retropod/features/music/playlist/providers/playlists_provider.dart';
 import 'package:retropod/features/now_playing/models/now_playing_model.dart';
 
 final nowPlayingDetailsProvider =
@@ -111,8 +111,10 @@ class NowPlayingDetailsNotifier extends Notifier<NowPlayingModel> {
       Constants.metadataBoxName,
     );
     await metadataBox.putAt(updatedMetadata.originalSongIndex, updatedMetadata);
+    ref
+        .read(audioFilesServiceProvider.notifier)
+        .updateSongMetadata(updatedMetadata);
     ref.invalidate(filteredAudioFilesProvider);
     ref.invalidate(albumDetailsProvider);
-    ref.invalidate(playlistsProvider);
   }
 }

@@ -2,11 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/core/models/shared_preference_keys.dart';
 import 'package:retropod/core/providers/shared_preferences_with_cache_provider.dart';
+import 'package:retropod/core/utils/rating_snapshot.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
+import 'package:retropod/features/settings/models/click_wheel_step.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
+import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,6 +52,13 @@ class SettingsPreferencesRepository {
           SharedPreferencesKeys.clickWheelSensitivity.name,
         ) ??
         ClickWheelSensitivity.medium.name;
+  }
+
+  String getClickWheelStep() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.clickWheelStep.name,
+        ) ??
+        ClickWheelStep.normal.name;
   }
 
   bool getTouchScreenEnabled() {
@@ -114,6 +124,23 @@ class SettingsPreferencesRepository {
         DeviceSkin.classic.name;
   }
 
+  String getNoteFontColor() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.noteFontColor.name,
+        ) ??
+        NoteFontColor.theme.name;
+  }
+
+  int getNoteFontSize() {
+    final size = _sharedPreferencesWithCache.getInt(
+      SharedPreferencesKeys.noteFontSize.name,
+    );
+    if (size == null || size < Constants.minNoteFontSize) {
+      return Constants.defaultNoteFontSize;
+    }
+    return size.clamp(Constants.minNoteFontSize, Constants.maxNoteFontSize);
+  }
+
   Future<void> setLanguageLocaleCode({
     required String languageLocaleCode,
   }) async {
@@ -143,6 +170,13 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.clickWheelSensitivity.name,
       clickWheelSensitivityName,
+    );
+  }
+
+  Future<void> setClickWheelStep({required String clickWheelStepName}) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.clickWheelStep.name,
+      clickWheelStepName,
     );
   }
 
@@ -212,6 +246,43 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.deviceSkin.name,
       deviceSkinName,
+    );
+  }
+
+  Future<void> setNoteFontColor({required String noteFontColorName}) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.noteFontColor.name,
+      noteFontColorName,
+    );
+  }
+
+  Future<void> setNoteFontSize({required int noteFontSize}) async {
+    return _sharedPreferencesWithCache.setInt(
+      SharedPreferencesKeys.noteFontSize.name,
+      noteFontSize.clamp(Constants.minNoteFontSize, Constants.maxNoteFontSize),
+    );
+  }
+
+  /// Returns the `filePath -> rating` snapshot saved before a library rescan
+  /// so star ratings (the Starred playlist) can be restored afterwards.
+  Map<String, int> getRatingSnapshot() {
+    return decodeRatingSnapshot(
+      _sharedPreferencesWithCache.getString(
+        SharedPreferencesKeys.ratingSnapshot.name,
+      ),
+    );
+  }
+
+  Future<void> setRatingSnapshot({required Map<String, int> ratingSnapshot}) {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.ratingSnapshot.name,
+      encodeRatingSnapshot(ratingSnapshot),
+    );
+  }
+
+  Future<void> clearRatingSnapshot() {
+    return _sharedPreferencesWithCache.remove(
+      SharedPreferencesKeys.ratingSnapshot.name,
     );
   }
 }

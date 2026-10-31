@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +16,8 @@ mixin CustomPageScreen<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   final int initialPage = 0;
   double currentPage = 0;
   int selectedDisplayItem = 0;
+  int _pendingPageScrolls = 0;
+  bool _isDrainingPageScrolls = false;
 
   void onSelectPressed();
 
@@ -49,12 +53,62 @@ mixin CustomPageScreen<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     await scrollBackward();
   }
 
+  void _queuePageScrolls(int steps) {
+    _pendingPageScrolls += steps;
+    unawaited(_drainPageScrolls());
+  }
+
+  Future<void> _drainPageScrolls() async {
+    if (_isDrainingPageScrolls) {
+      return;
+    }
+    if (displayItems.isEmpty) {
+      _pendingPageScrolls = 0;
+      return;
+    }
+    _isDrainingPageScrolls = true;
+    try {
+      while (mounted && pageController.hasClients && _pendingPageScrolls != 0) {
+        final int step = _pendingPageScrolls > 0 ? 1 : -1;
+        final double? current = pageController.page;
+        if (current == null) {
+          break;
+        }
+        final int target = (current.round() + step).clamp(
+          0,
+          displayItems.length - 1,
+        );
+        if (target == current.round()) {
+          if (step > 0 && _pendingPageScrolls > 0) {
+            _pendingPageScrolls = 0;
+          } else if (step < 0 && _pendingPageScrolls < 0) {
+            _pendingPageScrolls = 0;
+          }
+          break;
+        }
+        _pendingPageScrolls -= step;
+        await pageController.animateToPage(
+          target,
+          duration: _pendingPageScrolls == 0
+              ? const Duration(milliseconds: 300)
+              : const Duration(milliseconds: 100),
+          curve: Curves.ease,
+        );
+      }
+    } finally {
+      _isDrainingPageScrolls = false;
+    }
+    if (_pendingPageScrolls != 0) {
+      await _drainPageScrolls();
+    }
+  }
+
   Future<void> rotateForward() async {
-    await scrollForward();
+    _queuePageScrolls(1);
   }
 
   Future<void> rotateBackward() async {
-    await scrollBackward();
+    _queuePageScrolls(-1);
   }
 
   void seekForwardLongPress() {}

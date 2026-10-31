@@ -32,9 +32,15 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen>
 
   Future<void> _navigateToPlaylistSongsScreen(int displayIndex) async {
     setState(() => selectedDisplayItem = displayIndex);
+    final selectedPlaylist = displayItems[displayIndex];
+    // The starred playlist is virtual, so it is routed via a sentinel key
+    final isStarredPlaylist =
+        selectedPlaylist.key == null && selectedPlaylist.name == 'Starred';
     context.goNamed(
       Routes.playlistSongs.name,
-      extra: displayItems[displayIndex].key.toString(),
+      extra: isStarredPlaylist
+          ? PlaylistModel.starredKey.toString()
+          : selectedPlaylist.key.toString(),
     );
   }
 

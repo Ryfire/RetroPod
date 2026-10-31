@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/providers/device_directory_provider.dart';
+import 'package:retropod/core/utils/directory_exclusion.dart';
 
 final metadataReaderRepositoryProvider =
     Provider.autoDispose<MetadataReaderRepository>((ref) {
@@ -213,14 +214,28 @@ class MetadataReaderRepository {
   }
 
   UnmodifiableListView<MusicMetadata> extractMetadataFromDirectory(
-    String musicFolderPath,
+    ({
+      String directoryPath,
+      Set<String> excludedDirectoryPaths,
+      List<String> nameFilters,
+    })
+    params,
   ) {
-    final Directory storageDir = Directory(musicFolderPath);
+    final Directory storageDir = Directory(params.directoryPath);
     final List<FileSystemEntity> files = storageDir.listSync(
       recursive: true,
       followLinks: false,
     );
-    final List<String> filePaths = files.map((e) => e.path).toList();
+    final List<String> filePaths = files
+        .map((e) => e.path)
+        .where(
+          (path) => !isDirectoryExcluded(
+            directoryPath: parentDirectoryPathOf(path),
+            excludedDirectoryPaths: params.excludedDirectoryPaths,
+            nameFilters: params.nameFilters,
+          ),
+        )
+        .toList();
 
     final List<MusicMetadata> metadataList = [];
 

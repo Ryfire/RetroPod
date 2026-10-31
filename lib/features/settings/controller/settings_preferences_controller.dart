@@ -14,13 +14,17 @@ import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/services/audio_files_service.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
+import 'package:retropod/core/utils/rating_snapshot.dart';
 import 'package:retropod/features/app_startup/controllers/splash_controller.dart';
 import 'package:retropod/features/music/playlist/models/playlist_model.dart';
+import 'package:retropod/features/notes/services/notes_service.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
+import 'package:retropod/features/settings/models/click_wheel_step.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
+import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/settings_preferences_model.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
@@ -52,8 +56,11 @@ class SettingsPreferencesControllerNotifier
       clickWheelSize: ClickWheelSize.values.byName(
         settingsPreferencesRepository.getClickWheelSize(),
       ),
-      clickWheelSensitivity: ClickWheelSensitivity.values.byName(
+      clickWheelSensitivity: ClickWheelSensitivity.fromName(
         settingsPreferencesRepository.getClickWheelSensitivity(),
+      ),
+      clickWheelStep: ClickWheelStep.fromName(
+        settingsPreferencesRepository.getClickWheelStep(),
       ),
       isTouchScreenEnabled: settingsPreferencesRepository
           .getTouchScreenEnabled(),
@@ -71,6 +78,10 @@ class SettingsPreferencesControllerNotifier
       deviceSkin: DeviceSkin.fromName(
         settingsPreferencesRepository.getDeviceSkin(),
       ),
+      noteFontColor: NoteFontColor.fromName(
+        settingsPreferencesRepository.getNoteFontColor(),
+      ),
+      noteFontSize: settingsPreferencesRepository.getNoteFontSize(),
     );
   }
 
@@ -153,6 +164,33 @@ class SettingsPreferencesControllerNotifier
         .setDeviceSkin(deviceSkinName: skin.name);
   }
 
+  Future<void> setNoteFontColor(NoteFontColor noteFontColor) async {
+    if (state.noteFontColor == noteFontColor) {
+      return;
+    }
+    state = state.copyWith(noteFontColor: noteFontColor);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setNoteFontColor(noteFontColorName: noteFontColor.name);
+  }
+
+  /// Changing the global note font size resets every note back to it by
+  /// clearing all saved per-note font sizes.
+  Future<void> setNoteFontSize(int noteFontSize) async {
+    final int clamped = noteFontSize.clamp(
+      Constants.minNoteFontSize,
+      Constants.maxNoteFontSize,
+    );
+    if (state.noteFontSize == clamped) {
+      return;
+    }
+    state = state.copyWith(noteFontSize: clamped);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setNoteFontSize(noteFontSize: clamped);
+    await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
+  }
+
   Future<void> toggleClickWheelSize() async {
     switch (state.clickWheelSize) {
       case ClickWheelSize.small:
@@ -202,6 +240,16 @@ class SettingsPreferencesControllerNotifier
         await ref
             .read(settingsPreferencesRepositoryProvider)
             .setClickWheelSensitivity(
+              clickWheelSensitivityName: ClickWheelSensitivity.mediumHigh.name,
+            );
+        state = state.copyWith(
+          clickWheelSensitivity: ClickWheelSensitivity.mediumHigh,
+        );
+        break;
+      case ClickWheelSensitivity.mediumHigh:
+        await ref
+            .read(settingsPreferencesRepositoryProvider)
+            .setClickWheelSensitivity(
               clickWheelSensitivityName: ClickWheelSensitivity.high.name,
             );
         state = state.copyWith(
@@ -219,6 +267,16 @@ class SettingsPreferencesControllerNotifier
         );
         break;
     }
+  }
+
+  Future<void> toggleClickWheelStep() async {
+    final int nextIndex =
+        (state.clickWheelStep.index + 1) % ClickWheelStep.values.length;
+    final ClickWheelStep nextStep = ClickWheelStep.values[nextIndex];
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setClickWheelStep(clickWheelStepName: nextStep.name);
+    state = state.copyWith(clickWheelStep: nextStep);
   }
 
   Future<void> toggleTouchScreen() async {
@@ -323,7 +381,17 @@ class SettingsPreferencesControllerNotifier
   }
 
   Future<void> rescanMusicFiles({bool clearPlaylists = false}) async {
-    await Hive.box<MusicMetadata>(Constants.metadataBoxName).clear();
+    final Box<MusicMetadata> metadataBox = Hive.box<MusicMetadata>(
+      Constants.metadataBoxName,
+    );
+    // Snapshot ratings before the cache is wiped so the Starred playlist can
+    // be restored after the rescan rebuilds the metadata from file tags.
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setRatingSnapshot(
+          ratingSnapshot: extractRatingSnapshot(metadataBox.values.toList()),
+        );
+    await metadataBox.clear();
     if (clearPlaylists) {
       await Hive.box<PlaylistModel>(Constants.playlistBoxName).clear();
     }
@@ -363,6 +431,13 @@ class SettingsPreferencesControllerNotifier
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setDeviceSkin(deviceSkinName: DeviceSkin.classic.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setNoteFontColor(noteFontColorName: NoteFontColor.theme.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setNoteFontSize(noteFontSize: Constants.defaultNoteFontSize);
+    await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
     ref.invalidateSelf();
   }
 

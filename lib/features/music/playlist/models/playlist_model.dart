@@ -2,6 +2,11 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 
 class PlaylistModel extends HiveObject {
+  /// Key used to route to the virtual "Starred" auto-playlist.
+  /// It is never stored in the playlist box, so it can never collide
+  /// with a real playlist key.
+  static const int starredKey = -1;
+
   String name;
 
   List<MusicMetadata> songs;

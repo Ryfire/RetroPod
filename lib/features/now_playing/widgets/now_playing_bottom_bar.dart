@@ -7,8 +7,17 @@ import 'package:retropod/features/now_playing/widgets/seek_bar.dart';
 
 class NowPlayingBottomBar extends ConsumerWidget {
   final bool showScrubber;
+  final ScrubberController? scrubberController;
+  final bool scrubberActive;
+  final VoidCallback? onScrubChanged;
 
-  const NowPlayingBottomBar({super.key, this.showScrubber = false});
+  const NowPlayingBottomBar({
+    super.key,
+    this.showScrubber = false,
+    this.scrubberController,
+    this.scrubberActive = false,
+    this.onScrubChanged,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,10 +35,20 @@ class NowPlayingBottomBar extends ConsumerWidget {
                       .trackDuration ??
                   1000) /
               1000;
-          double currentDuration = snapshot.data?.inSeconds.toDouble() ?? 0;
+          double currentDuration =
+              (showScrubber && scrubberActive
+                      ? scrubberController?.position
+                      : null)
+                  ?.toDouble() ??
+              snapshot.data?.inSeconds.toDouble() ??
+              0;
           if (currentDuration < 0) {
             currentDuration = 0;
           }
+          currentDuration = currentDuration.clamp(
+            0,
+            totalDuration > 0 ? totalDuration : 0,
+          );
 
           final int elapsedTimeInMinutes = currentDuration ~/ 60;
           final int elapsedTimeInSeconds = currentDuration.toInt() % 60;
@@ -62,7 +81,13 @@ class NowPlayingBottomBar extends ConsumerWidget {
                 ),
               ),
               if (showScrubber)
-                ScrubberBar(max: totalDuration, value: currentDuration),
+                ScrubberBar(
+                  max: totalDuration,
+                  value: currentDuration,
+                  controller: scrubberController,
+                  active: scrubberActive,
+                  onChanged: onScrubChanged,
+                ),
               if (!showScrubber)
                 SeekBar(max: totalDuration, value: currentDuration),
               SizedBox(

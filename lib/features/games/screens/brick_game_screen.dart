@@ -118,7 +118,7 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
   final double _ballRadius = 5;
 
   // Paddle state
-  final double _paddleW = 32;
+  final double _paddleW = 54;
   final double _paddleH = 5;
   late double _paddleX;
 

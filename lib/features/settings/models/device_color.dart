@@ -102,6 +102,11 @@ enum DeviceColor {
     }
   }
 
+  /// A single solid representative color for this device color, usable where
+  /// a flat swatch or text color is needed instead of the frame gradient.
+  Color get textColor =>
+      style.solidFrameColor ?? style.frameGradientColors.first;
+
   DeviceColorStyle get style {
     switch (this) {
       case DeviceColor.silver:

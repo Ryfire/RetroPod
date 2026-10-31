@@ -233,10 +233,25 @@ class AudioPlayerServiceNotifier extends AsyncNotifier<void> {
         return;
       }
 
-      final int index = ref
+      int index = ref
           .read(nowPlayingDetailsProvider)
           .metadataList
           .indexWhere((element) => element.originalSongIndex == originalIndex);
+      if (index == -1) {
+        // The song was added to the library after this list was loaded.
+        await setAudioSource(
+          musicMetadataList: ref.read(filteredAudioFilesProvider).requireValue,
+        );
+        index = ref
+            .read(nowPlayingDetailsProvider)
+            .metadataList
+            .indexWhere(
+              (element) => element.originalSongIndex == originalIndex,
+            );
+      }
+      if (index == -1) {
+        return;
+      }
       await ref.read(audioPlayerProvider).seek(Duration.zero, index: index);
       Future.delayed(const Duration(milliseconds: 200), play);
     });

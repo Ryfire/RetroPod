@@ -146,7 +146,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      "${Directory.current.path}/test/test_files/mp3/",
+      (
+        directoryPath: "${Directory.current.path}/test/test_files/mp3/",
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(
       metadataList.first,
@@ -175,7 +179,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      "${Directory.current.path}/test/test_files/flac/",
+      (
+        directoryPath: "${Directory.current.path}/test/test_files/flac/",
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(
       metadataList.first,
@@ -204,7 +212,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      "${Directory.current.path}/test/test_files/ogg/",
+      (
+        directoryPath: "${Directory.current.path}/test/test_files/ogg/",
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(
       metadataList.first,
@@ -232,7 +244,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      "${Directory.current.path}/test/test_files/opus/",
+      (
+        directoryPath: "${Directory.current.path}/test/test_files/opus/",
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(
       metadataList.first,
@@ -261,7 +277,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      "${Directory.current.path}/test/test_files/m4a/",
+      (
+        directoryPath: "${Directory.current.path}/test/test_files/m4a/",
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(
       metadataList.first,
@@ -289,7 +309,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      "${Directory.current.path}/test/test_files/wav/",
+      (
+        directoryPath: "${Directory.current.path}/test/test_files/wav/",
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(
       metadataList.first,
@@ -325,7 +349,11 @@ void main() {
       metadataReaderRepositoryProvider,
     );
     final metadataList = metadataReaderRepository.extractMetadataFromDirectory(
-      tempDirectory.path,
+      (
+        directoryPath: tempDirectory.path,
+        excludedDirectoryPaths: const {},
+        nameFilters: const [],
+      ),
     );
     expect(metadataList, isNotEmpty);
     expect(metadataList.first.lyrics, lrcContent);
