@@ -1,5 +1,6 @@
 import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
+import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
 import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/click_wheel_step.dart';
@@ -15,6 +16,7 @@ class SettingsPreferencesModel {
   final ClickWheelSize clickWheelSize;
   final ClickWheelSensitivity clickWheelSensitivity;
   final ClickWheelStep clickWheelStep;
+  final ClickWheelAcceleration clickWheelAcceleration;
   final bool isTouchScreenEnabled;
   final RepeatMode repeatMode;
   final bool vibrate;
@@ -34,6 +36,7 @@ class SettingsPreferencesModel {
     required this.clickWheelSize,
     required this.clickWheelSensitivity,
     required this.clickWheelStep,
+    required this.clickWheelAcceleration,
     required this.isTouchScreenEnabled,
     required this.repeatMode,
     required this.vibrate,
@@ -54,6 +57,7 @@ class SettingsPreferencesModel {
     ClickWheelSize? clickWheelSize,
     ClickWheelSensitivity? clickWheelSensitivity,
     ClickWheelStep? clickWheelStep,
+    ClickWheelAcceleration? clickWheelAcceleration,
     bool? isTouchScreenEnabled,
     RepeatMode? repeatMode,
     bool? vibrate,
@@ -74,6 +78,8 @@ class SettingsPreferencesModel {
       clickWheelSensitivity:
           clickWheelSensitivity ?? this.clickWheelSensitivity,
       clickWheelStep: clickWheelStep ?? this.clickWheelStep,
+      clickWheelAcceleration:
+          clickWheelAcceleration ?? this.clickWheelAcceleration,
       isTouchScreenEnabled: isTouchScreenEnabled ?? this.isTouchScreenEnabled,
       repeatMode: repeatMode ?? this.repeatMode,
       vibrate: vibrate ?? this.vibrate,
@@ -97,6 +103,7 @@ class SettingsPreferencesModel {
         other.clickWheelSize == clickWheelSize &&
         other.clickWheelSensitivity == clickWheelSensitivity &&
         other.clickWheelStep == clickWheelStep &&
+        other.clickWheelAcceleration == clickWheelAcceleration &&
         other.isTouchScreenEnabled == isTouchScreenEnabled &&
         other.repeatMode == repeatMode &&
         other.vibrate == vibrate &&
@@ -118,6 +125,7 @@ class SettingsPreferencesModel {
     clickWheelSize,
     clickWheelSensitivity,
     clickWheelStep,
+    clickWheelAcceleration,
     isTouchScreenEnabled,
     repeatMode,
     vibrate,

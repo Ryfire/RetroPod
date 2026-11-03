@@ -4,6 +4,7 @@ import 'package:retropod/core/models/shared_preference_keys.dart';
 import 'package:retropod/core/providers/shared_preferences_with_cache_provider.dart';
 import 'package:retropod/core/utils/rating_snapshot.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
+import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
 import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/click_wheel_step.dart';
@@ -59,6 +60,13 @@ class SettingsPreferencesRepository {
           SharedPreferencesKeys.clickWheelStep.name,
         ) ??
         ClickWheelStep.normal.name;
+  }
+
+  String getClickWheelAcceleration() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.clickWheelAcceleration.name,
+        ) ??
+        ClickWheelAcceleration.normal.name;
   }
 
   bool getTouchScreenEnabled() {
@@ -177,6 +185,15 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.clickWheelStep.name,
       clickWheelStepName,
+    );
+  }
+
+  Future<void> setClickWheelAcceleration({
+    required String clickWheelAccelerationName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.clickWheelAcceleration.name,
+      clickWheelAccelerationName,
     );
   }
 

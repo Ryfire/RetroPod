@@ -508,6 +508,10 @@
   "@clickWheelStepSettingTitle": {
     "description": "The title of the click wheel step setting"
   },
+  "clickWheelAccelerationSettingTitle": "Click Wheel Tracking",
+  "@clickWheelAccelerationSettingTitle": {
+    "description": "The title of the click wheel tracking setting"
+  },
   "small": "Small",
   "@small": {
     "description": "The text for small click wheel size"
@@ -535,6 +539,10 @@
   "high": "High",
   "@high": {
     "description": "The text for high click wheel sensitivity"
+  },
+  "linear": "Linear",
+  "@linear": {
+    "description": "The text for linear click wheel tracking without speed based acceleration"
   },
   "coarse": "Coarse",
   "@coarse": {

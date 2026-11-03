@@ -28,6 +28,7 @@ enum _SettingsDisplayItems {
   clickWheelSize,
   clickWheelSensitivity,
   clickWheelStep,
+  clickWheelAcceleration,
   isTouchScreenEnabled,
   vibrate,
   clickWheelSound,
@@ -67,6 +68,8 @@ enum _SettingsDisplayItems {
         return context.localization.clickWheelSensitivitySettingTitle;
       case clickWheelStep:
         return context.localization.clickWheelStepSettingTitle;
+      case clickWheelAcceleration:
+        return context.localization.clickWheelAccelerationSettingTitle;
       case volumeMode:
         return context.localization.volumeModeSettingTitle;
       case vibrate:
@@ -156,6 +159,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
             .toggleClickWheelStep();
+        break;
+      case _SettingsDisplayItems.clickWheelAcceleration:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .toggleClickWheelAcceleration();
         break;
       case _SettingsDisplayItems.isTouchScreenEnabled:
         await ref
@@ -249,6 +257,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.clickWheelSensitivity.title(context);
       case _SettingsDisplayItems.clickWheelStep:
         return settingsState.clickWheelStep.title(context);
+      case _SettingsDisplayItems.clickWheelAcceleration:
+        return settingsState.clickWheelAcceleration.title(context);
       case _SettingsDisplayItems.appTheme:
         return settingsState.appTheme.title(context);
       case _SettingsDisplayItems.repeat:

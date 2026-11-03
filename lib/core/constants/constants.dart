@@ -23,7 +23,6 @@ class Constants {
   // Click Wheel Acceleration Constants
   static const double clickWheelAccelerationMinVelocityDegreesPerSecond = 90;
   static const double clickWheelMaxAngularVelocityDegreesPerSecond = 1080;
-  static const double clickWheelAccelerationFactor = 4;
   static const int clickWheelMaxStepsPerPointerEvent = 8;
 
   static const double screenHeight = 300;

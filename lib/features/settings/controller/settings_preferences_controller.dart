@@ -19,6 +19,7 @@ import 'package:retropod/features/app_startup/controllers/splash_controller.dart
 import 'package:retropod/features/music/playlist/models/playlist_model.dart';
 import 'package:retropod/features/notes/services/notes_service.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
+import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
 import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/click_wheel_step.dart';
@@ -61,6 +62,9 @@ class SettingsPreferencesControllerNotifier
       ),
       clickWheelStep: ClickWheelStep.fromName(
         settingsPreferencesRepository.getClickWheelStep(),
+      ),
+      clickWheelAcceleration: ClickWheelAcceleration.fromName(
+        settingsPreferencesRepository.getClickWheelAcceleration(),
       ),
       isTouchScreenEnabled: settingsPreferencesRepository
           .getTouchScreenEnabled(),
@@ -277,6 +281,20 @@ class SettingsPreferencesControllerNotifier
         .read(settingsPreferencesRepositoryProvider)
         .setClickWheelStep(clickWheelStepName: nextStep.name);
     state = state.copyWith(clickWheelStep: nextStep);
+  }
+
+  Future<void> toggleClickWheelAcceleration() async {
+    final int nextIndex =
+        (state.clickWheelAcceleration.index + 1) %
+        ClickWheelAcceleration.values.length;
+    final ClickWheelAcceleration nextAcceleration =
+        ClickWheelAcceleration.values[nextIndex];
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setClickWheelAcceleration(
+          clickWheelAccelerationName: nextAcceleration.name,
+        );
+    state = state.copyWith(clickWheelAcceleration: nextAcceleration);
   }
 
   Future<void> toggleTouchScreen() async {

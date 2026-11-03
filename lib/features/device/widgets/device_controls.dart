@@ -34,6 +34,7 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
     PointerDownEvent event, {
     required double innerDeadzoneRadius,
     required double thresholdDegrees,
+    required double accelerationFactor,
   }) {
     ref.read(clickWheelGestureProvider.notifier).active = true;
     if (_rotationTracker != null) {
@@ -50,7 +51,7 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
           Constants.clickWheelAccelerationMinVelocityDegreesPerSecond,
       maxVelocityDegreesPerSecond:
           Constants.clickWheelMaxAngularVelocityDegreesPerSecond,
-      accelerationFactor: Constants.clickWheelAccelerationFactor,
+      accelerationFactor: accelerationFactor,
       maxStepsPerEvent: Constants.clickWheelMaxStepsPerPointerEvent,
     );
     tracker.begin(
@@ -122,6 +123,11 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
         (settings) => settings.clickWheelStep,
       ),
     );
+    final clickWheelAcceleration = ref.watch(
+      settingsPreferencesControllerProvider.select(
+        (settings) => settings.clickWheelAcceleration,
+      ),
+    );
     late final double clickWheelRadiusRatio;
     late final double selectButtonRadiusRatio;
     switch (clickWheelSize) {
@@ -174,6 +180,7 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
             event,
             innerDeadzoneRadius: innerDeadzoneRadius,
             thresholdDegrees: thresholdDegrees,
+            accelerationFactor: clickWheelAcceleration.accelerationFactor,
           ),
           onPointerMove: onWheelPointerMove,
           onPointerUp: onWheelPointerEnd,
