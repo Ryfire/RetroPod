@@ -14,6 +14,12 @@ import 'dart:ui';
 /// physical click wheel. The velocity is smoothed with an exponential moving
 /// average and it resets whenever tracking restarts or the pointer re-enters
 /// the wheel from the inner deadzone.
+///
+/// Rotation that has not crossed the step threshold yet survives a quick
+/// finger lift: when the pointer drifts off the wheel and is placed back down
+/// within [liftCarryOverWindow] the gesture continues where it stopped, like
+/// a physical wheel. The carry is discarded when the next touch lands after
+/// the window has passed or when the rotation direction changes.
 class ClickWheelRotationTracker {
   ClickWheelRotationTracker({
     required this.thresholdDegrees,
@@ -27,9 +33,14 @@ class ClickWheelRotationTracker {
        assert(accelerationFactor >= 1),
        assert(maxStepsPerEvent >= 1);
 
+  /// How long the rotation of a lifted pointer stays pending. A new touch
+  /// within this window continues the previous gesture, otherwise the
+  /// accumulated rotation is discarded.
+  static const Duration liftCarryOverWindow = Duration(milliseconds: 400);
+
   /// Degrees of rotation required to emit a single scroll step when the
   /// pointer moves slowly.
-  final double thresholdDegrees;
+  double thresholdDegrees;
 
   /// Angular velocity in degrees per second at which the step threshold
   /// reaches its minimum value.
@@ -41,7 +52,7 @@ class ClickWheelRotationTracker {
 
   /// Maximum ratio between the base step threshold and the accelerated step
   /// threshold.
-  final double accelerationFactor;
+  double accelerationFactor;
 
   /// Maximum number of scroll steps emitted per pointer move event. The
   /// rotation that exceeds the cap stays accumulated and is emitted by the
@@ -55,6 +66,7 @@ class ClickWheelRotationTracker {
   double? _innerDeadzoneRadius;
   double? _lastAngleRadians;
   int? _lastEventMicros;
+  int? _lastEndEventMicros;
   double _angularVelocity = 0;
   double _accumulatedDegrees = 0;
 
@@ -64,27 +76,53 @@ class ClickWheelRotationTracker {
   /// The smoothed angular velocity of the pointer in degrees per second.
   double get velocityDegreesPerSecond => _angularVelocity;
 
+  /// Applies new settings between gestures so a reused tracker always scrolls
+  /// with the preferences the user picked most recently.
+  void configure({
+    required double thresholdDegrees,
+    required double accelerationFactor,
+  }) {
+    assert(thresholdDegrees > 0);
+    assert(accelerationFactor >= 1);
+    this.thresholdDegrees = thresholdDegrees;
+    this.accelerationFactor = accelerationFactor;
+  }
+
   /// Starts tracking [pointerId] around the wheel.
   ///
   /// [innerDeadzoneRadius] defines the radius around the center of the wheel
   /// where the pointer angle is considered unreliable.
+  ///
+  /// Rotation left over from a previous gesture is kept when [timeStamp] lies
+  /// within [liftCarryOverWindow] of the last lift and discarded otherwise.
   ///
   /// Returns false when another pointer is already being tracked.
   bool begin({
     required int pointerId,
     required Offset wheelCenter,
     required double innerDeadzoneRadius,
+    required Duration timeStamp,
   }) {
     if (_activePointerId != null) {
       return false;
     }
+    final int? lastEndEventMicros = _lastEndEventMicros;
+    final int eventMicros = timeStamp.inMicroseconds;
+    final int carryOverMicros = lastEndEventMicros == null
+        ? -1
+        : eventMicros - lastEndEventMicros;
+    final bool withinCarryOverWindow =
+        carryOverMicros >= 0 &&
+        carryOverMicros <= liftCarryOverWindow.inMicroseconds;
     _activePointerId = pointerId;
     _wheelCenter = wheelCenter;
     _innerDeadzoneRadius = innerDeadzoneRadius;
     _lastAngleRadians = null;
     _lastEventMicros = null;
     _angularVelocity = 0;
-    _accumulatedDegrees = 0;
+    if (!withinCarryOverWindow) {
+      _accumulatedDegrees = 0;
+    }
     return true;
   }
 
@@ -131,6 +169,13 @@ class ClickWheelRotationTracker {
     );
     final double deltaDegrees = deltaRadians * 180 / math.pi;
     _updateVelocity(deltaDegrees, eventMicros);
+    // Reversing the rotation direction must not pay off the rotation
+    // accumulated before the change, otherwise the first step in the new
+    // direction fires early.
+    if (_accumulatedDegrees != 0 &&
+        deltaDegrees.isNegative != _accumulatedDegrees.isNegative) {
+      _accumulatedDegrees = 0;
+    }
     _accumulatedDegrees += deltaDegrees;
     final double effectiveThreshold = _effectiveThresholdDegrees;
     int steps = 0;
@@ -147,18 +192,20 @@ class ClickWheelRotationTracker {
     return steps;
   }
 
-  /// Stops tracking [pointerId] and resets the accumulated rotation.
-  void end({required int pointerId}) {
+  /// Stops tracking [pointerId] and remembers the rotation that has not
+  /// crossed the step threshold yet so a quick follow-up touch can continue
+  /// the gesture.
+  void end({required int pointerId, required Duration timeStamp}) {
     if (_activePointerId != pointerId) {
       return;
     }
+    _lastEndEventMicros = timeStamp.inMicroseconds;
     _activePointerId = null;
     _wheelCenter = null;
     _innerDeadzoneRadius = null;
     _lastAngleRadians = null;
     _lastEventMicros = null;
     _angularVelocity = 0;
-    _accumulatedDegrees = 0;
   }
 
   void _updateVelocity(double deltaDegrees, int eventMicros) {
