@@ -19,6 +19,13 @@ mixin CustomPageScreen<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   int _pendingPageScrolls = 0;
   bool _isDrainingPageScrolls = false;
 
+  /// Number of wheel steps required to advance one page. Subclasses can
+  /// override this to make page turns feel less jumpy; the default of 1
+  /// preserves the original one-page-per-step behavior.
+  int get wheelStepsPerPageTurn => 1;
+
+  int _wheelStepAccumulator = 0;
+
   void onSelectPressed();
 
   void onSelectLongPress() {}
@@ -104,11 +111,25 @@ mixin CustomPageScreen<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   Future<void> rotateForward() async {
-    _queuePageScrolls(1);
+    if (_wheelStepAccumulator.isNegative) {
+      // The wheel reversed direction; abandon the pending page credit so
+      // the first page in the new direction does not lag behind.
+      _wheelStepAccumulator = 0;
+    }
+    if (++_wheelStepAccumulator >= wheelStepsPerPageTurn) {
+      _wheelStepAccumulator = 0;
+      _queuePageScrolls(1);
+    }
   }
 
   Future<void> rotateBackward() async {
-    _queuePageScrolls(-1);
+    if (_wheelStepAccumulator > 0) {
+      _wheelStepAccumulator = 0;
+    }
+    if (--_wheelStepAccumulator <= -wheelStepsPerPageTurn) {
+      _wheelStepAccumulator = 0;
+      _queuePageScrolls(-1);
+    }
   }
 
   void seekForwardLongPress() {}
