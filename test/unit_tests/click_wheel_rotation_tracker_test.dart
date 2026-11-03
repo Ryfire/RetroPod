@@ -21,6 +21,26 @@ void main() {
     );
   }
 
+  /// Moves the pointer to [angleDegrees] around the wheel and returns the
+  /// number of scroll steps the tracker emitted for this move.
+  int rotateTo(
+    ClickWheelRotationTracker tracker,
+    double angleDegrees,
+    Duration timestamp,
+  ) {
+    final double angleRadians = angleDegrees * math.pi / 180;
+    return tracker.update(
+      pointerId: 1,
+      localPosition:
+          wheelCenter +
+          Offset(
+            radius * math.cos(angleRadians),
+            radius * math.sin(angleRadians),
+          ),
+      timeStamp: timestamp,
+    );
+  }
+
   /// Simulates a pointer moving [totalDegrees] around the wheel in
   /// [stepDegrees] increments spaced [stepDuration] apart and returns the
   /// total number of emitted scroll steps.
@@ -35,6 +55,7 @@ void main() {
       pointerId: pointerId,
       wheelCenter: wheelCenter,
       innerDeadzoneRadius: innerDeadzoneRadius,
+      timeStamp: const Duration(milliseconds: 500),
     );
     int totalSteps = 0;
     double angleDegrees = 0;
@@ -61,7 +82,7 @@ void main() {
         timeStamp: timestamp,
       );
     }
-    tracker.end(pointerId: pointerId);
+    tracker.end(pointerId: pointerId, timeStamp: timestamp + stepDuration);
     return totalSteps;
   }
 
@@ -135,6 +156,121 @@ void main() {
       );
 
       expect(steps, 0);
+    });
+
+    test('configure applies new settings between gestures', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      tracker.configure(thresholdDegrees: 90, accelerationFactor: 2);
+      expect(tracker.thresholdDegrees, 90);
+      expect(tracker.accelerationFactor, 2);
+    });
+
+    test('rotation across a quick finger lift carries over', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      int steps = 0;
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      // A short 30 degree drag emits nothing on its own. Four samples are
+      // needed because the first one only anchors the angle.
+      for (int i = 1; i <= 4; i++) {
+        steps += rotateTo(
+          tracker,
+          10.0 * i,
+          Duration(milliseconds: 500 + 200 * i),
+        );
+      }
+      expect(steps, 0);
+      tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 1500));
+      // Touching down again 300 milliseconds later continues the gesture and
+      // the combined 60 degrees cross the 45 degree threshold once.
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 1800),
+      );
+      for (int i = 1; i <= 4; i++) {
+        steps += rotateTo(
+          tracker,
+          40.0 + 10.0 * i,
+          Duration(milliseconds: 1800 + 200 * i),
+        );
+      }
+      expect(steps, 1);
+      tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 2800));
+    });
+
+    test('rotation is discarded when the next touch lands too late', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      int steps = 0;
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      for (int i = 1; i <= 4; i++) {
+        steps += rotateTo(
+          tracker,
+          10.0 * i,
+          Duration(milliseconds: 500 + 200 * i),
+        );
+      }
+      expect(steps, 0);
+      tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 1500));
+      // Touching down again 600 milliseconds later is outside the carry over
+      // window so the leftover 30 degrees are gone and the new drag starts
+      // from zero.
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 2100),
+      );
+      for (int i = 1; i <= 4; i++) {
+        steps += rotateTo(
+          tracker,
+          40.0 + 10.0 * i,
+          Duration(milliseconds: 2100 + 200 * i),
+        );
+      }
+      expect(steps, 0);
+      tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 2900));
+    });
+
+    test('reversing direction does not emit an early step', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      int steps = 0;
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      // 40 degrees forward stays below the 45 degree threshold.
+      for (int i = 1; i <= 4; i++) {
+        steps += rotateTo(
+          tracker,
+          10.0 * i,
+          Duration(milliseconds: 500 + 200 * i),
+        );
+      }
+      expect(steps, 0);
+      // 100 degrees backward earns exactly two backward steps once the
+      // leftover forward rotation is dropped at the direction change.
+      for (int i = 1; i <= 10; i++) {
+        steps += rotateTo(
+          tracker,
+          40.0 - 10.0 * i,
+          Duration(milliseconds: 1700 + 200 * i),
+        );
+      }
+      expect(steps, -2);
+      tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 3700));
     });
   });
 }

@@ -36,30 +36,44 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
     required double accelerationFactor,
   }) {
     ref.read(clickWheelGestureProvider.notifier).active = true;
-    if (_rotationTracker != null) {
-      return;
-    }
     final RenderObject? renderObject = _wheelBoxKey.currentContext
         ?.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.hasSize) {
       return;
     }
-    final ClickWheelRotationTracker tracker = ClickWheelRotationTracker(
-      thresholdDegrees: thresholdDegrees,
-      minVelocityDegreesPerSecond:
-          Constants.clickWheelAccelerationMinVelocityDegreesPerSecond,
-      maxVelocityDegreesPerSecond:
-          Constants.clickWheelMaxAngularVelocityDegreesPerSecond,
-      accelerationFactor: accelerationFactor,
-      maxStepsPerEvent: Constants.clickWheelMaxStepsPerPointerEvent,
-    );
-    tracker.begin(
+    // The tracker survives between gestures so rotation left over from a
+    // lifted finger can be picked up again by the next quick touch.
+    final ClickWheelRotationTracker? existingTracker = _rotationTracker;
+    final ClickWheelRotationTracker tracker;
+    if (existingTracker == null) {
+      tracker = ClickWheelRotationTracker(
+        thresholdDegrees: thresholdDegrees,
+        minVelocityDegreesPerSecond:
+            Constants.clickWheelAccelerationMinVelocityDegreesPerSecond,
+        maxVelocityDegreesPerSecond:
+            Constants.clickWheelMaxAngularVelocityDegreesPerSecond,
+        accelerationFactor: accelerationFactor,
+        maxStepsPerEvent: Constants.clickWheelMaxStepsPerPointerEvent,
+      );
+      _rotationTracker = tracker;
+    } else {
+      tracker = existingTracker;
+      tracker.configure(
+        thresholdDegrees: thresholdDegrees,
+        accelerationFactor: accelerationFactor,
+      );
+    }
+    if (!tracker.begin(
       pointerId: event.pointer,
       // The click wheel circle is centered inside its box.
       wheelCenter: renderObject.size.center(Offset.zero),
       innerDeadzoneRadius: innerDeadzoneRadius,
-    );
-    _rotationTracker = tracker;
+      timeStamp: event.timeStamp,
+    )) {
+      // Another pointer is already being tracked; keep the gesture flagged
+      // active for that pointer.
+      return;
+    }
   }
 
   Future<void> onWheelPointerMove(PointerMoveEvent event) async {
@@ -86,11 +100,13 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
   }
 
   void onWheelPointerEnd(PointerEvent event) {
-    if (_rotationTracker?.activePointerId != event.pointer) {
+    final ClickWheelRotationTracker? tracker = _rotationTracker;
+    if (tracker == null || tracker.activePointerId != event.pointer) {
       return;
     }
-    _rotationTracker?.end(pointerId: event.pointer);
-    _rotationTracker = null;
+    // The tracker is kept (not nulled) so its pending rotation can carry
+    // over to the next gesture.
+    tracker.end(pointerId: event.pointer, timeStamp: event.timeStamp);
     ref.read(clickWheelGestureProvider.notifier).active = false;
   }
 
