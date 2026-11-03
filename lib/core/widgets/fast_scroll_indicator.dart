@@ -15,7 +15,15 @@ const double fastScrollTouchRows = 12;
 /// [ClickWheelSpeed.coarse] reference speed for the fast scroll letter to
 /// appear. The requirement scales with the configured speed so the same
 /// finger effort triggers fast scroll at every speed setting.
-const double fastScrollWheelBaseRows = fastScrollTouchRows;
+///
+/// The value must stay reachable by LINEAR tracking, whose output is
+/// capped at `Constants.clickWheelMaxAngularVelocityDegreesPerSecond *
+/// window / 360 * stepsPerRevolution` = 0.6 * stepsPerRevolution steps
+/// per 200 ms window, i.e. 4.8 steps at the coarse reference speed. The
+/// anchor sits at roughly 83% of that physical maximum so a deliberate
+/// sustained spin triggers fast scroll at every speed while casual
+/// scrolling does not.
+const double fastScrollWheelBaseRows = 4;
 
 /// Wheel fast scroll threshold for a given steps-per-revolution setting,
 /// anchored so the [ClickWheelSpeed.coarse] speed keeps the historical
