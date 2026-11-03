@@ -272,5 +272,93 @@ void main() {
       expect(steps, -2);
       tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 3700));
     });
+
+    test('jitter while creeping forward keeps its progress', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      int steps = 0;
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      // Digitizer quantization at a pixel boundary: the reported angle
+      // alternates +6 and -4 degrees while the finger creeps forward, so
+      // the net rotation is +2 degrees per pair. The old behavior wiped
+      // the pending arc on every sign flip and never emitted a step; the
+      // tracker must erode the jitter instead and pay out the net arc.
+      double angleDegrees = 0;
+      tracker.update(
+        pointerId: 1,
+        localPosition: wheelCenter + const Offset(radius, 0),
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      Duration timestamp = const Duration(milliseconds: 500);
+      for (int i = 0; i < 200; i++) {
+        angleDegrees += i.isEven ? 6.0 : -4.0;
+        timestamp += const Duration(milliseconds: 50);
+        steps += rotateTo(tracker, angleDegrees, timestamp);
+      }
+      // 100 jitter pairs advance the finger 200 degrees, which crosses the
+      // 45 degree threshold exactly four times.
+      expect(steps, 4);
+      tracker.end(pointerId: 1, timeStamp: timestamp);
+    });
+
+    test('symmetric jitter around a resting finger emits no steps', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      int steps = 0;
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      // A finger resting on a pixel boundary oscillates by the same amount
+      // in both directions; the jitter cancels out and no step may fire.
+      double angleDegrees = 0;
+      tracker.update(
+        pointerId: 1,
+        localPosition: wheelCenter + const Offset(radius, 0),
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      Duration timestamp = const Duration(milliseconds: 500);
+      for (int i = 0; i < 200; i++) {
+        angleDegrees += i.isEven ? 0.5 : -0.5;
+        timestamp += const Duration(milliseconds: 50);
+        steps += rotateTo(tracker, angleDegrees, timestamp);
+      }
+      expect(steps, 0);
+      tracker.end(pointerId: 1, timeStamp: timestamp);
+    });
+
+    test('a decisive reversal still discards the pending rotation', () {
+      final ClickWheelRotationTracker tracker = createTracker();
+      int steps = 0;
+      tracker.begin(
+        pointerId: 1,
+        wheelCenter: wheelCenter,
+        innerDeadzoneRadius: innerDeadzoneRadius,
+        timeStamp: const Duration(milliseconds: 500),
+      );
+      // 40 degrees forward stays below the 45 degree threshold.
+      for (int i = 1; i <= 4; i++) {
+        steps += rotateTo(
+          tracker,
+          10.0 * i,
+          Duration(milliseconds: 500 + 200 * i),
+        );
+      }
+      expect(steps, 0);
+      // A single decisive 20 degree backward delta is far above the
+      // reversal cutoff, so the leftover 40 forward degrees are dropped
+      // right away and the next 30 backward degrees earn one step.
+      steps += rotateTo(tracker, 20.0, const Duration(milliseconds: 1700));
+      steps += rotateTo(tracker, 10.0, const Duration(milliseconds: 1900));
+      steps += rotateTo(tracker, 0.0, const Duration(milliseconds: 2100));
+      steps += rotateTo(tracker, -10.0, const Duration(milliseconds: 2300));
+      expect(steps, -1);
+      tracker.end(pointerId: 1, timeStamp: const Duration(milliseconds: 2500));
+    });
   });
 }

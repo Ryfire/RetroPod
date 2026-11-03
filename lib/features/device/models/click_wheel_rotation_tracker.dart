@@ -38,6 +38,10 @@ class ClickWheelRotationTracker {
   /// accumulated rotation is discarded.
   static const Duration liftCarryOverWindow = Duration(milliseconds: 400);
 
+  /// Opposing deltas smaller than the decisive reversal cutoff are treated
+  /// as digitizer jitter that only erodes the pending rotation.
+  static const double _minDecisiveReversalDegrees = 1.5;
+
   /// Degrees of rotation required to emit a single scroll step when the
   /// pointer moves slowly.
   double thresholdDegrees;
@@ -60,6 +64,13 @@ class ClickWheelRotationTracker {
   final int maxStepsPerEvent;
 
   static const double _velocitySmoothing = 0.6;
+
+  /// Opposing deltas at least this large count as a deliberate reversal
+  /// that discards the pending rotation. The cutoff scales with the step
+  /// threshold but never drops below the jitter floor so quantization
+  /// noise can never look like a reversal.
+  double get _decisiveReversalDegrees =>
+      math.max(_minDecisiveReversalDegrees, thresholdDegrees / 8);
 
   int? _activePointerId;
   Offset? _wheelCenter;
@@ -169,11 +180,17 @@ class ClickWheelRotationTracker {
     );
     final double deltaDegrees = deltaRadians * 180 / math.pi;
     _updateVelocity(deltaDegrees, eventMicros);
-    // Reversing the rotation direction must not pay off the rotation
-    // accumulated before the change, otherwise the first step in the new
-    // direction fires early.
+    // Tiny deltas that oppose the accumulated rotation are digitizer
+    // jitter: the reported position oscillates between adjacent pixels
+    // while the finger creeps forward. Erode the pending rotation by the
+    // jitter instead of discarding it, otherwise slow movement loses its
+    // progress and whole arcs of the wheel feel skipped. A large opposing
+    // delta is a decisive reversal: drop the pending rotation so the first
+    // step in the new direction fires promptly instead of waiting for the
+    // old arc to unwind.
     if (_accumulatedDegrees != 0 &&
-        deltaDegrees.isNegative != _accumulatedDegrees.isNegative) {
+        deltaDegrees.isNegative != _accumulatedDegrees.isNegative &&
+        deltaDegrees.abs() >= _decisiveReversalDegrees) {
       _accumulatedDegrees = 0;
     }
     _accumulatedDegrees += deltaDegrees;
