@@ -26,6 +26,11 @@ final audioFilesServiceProvider =
 
 class AudioFilesServiceNotifier
     extends AsyncNotifier<UnmodifiableListView<MusicMetadata>> {
+  /// Guards against concurrent background refreshes parsing the same
+  /// missing files twice and duplicating cache entries across provider
+  /// rebuilds.
+  static bool _isMissingFilesRefreshInProgress = false;
+
   @override
   Future<UnmodifiableListView<MusicMetadata>> build() async {
     return getAudioFilesMetadata();
@@ -151,8 +156,13 @@ class AudioFilesServiceNotifier
         }
         // Return cached metadata
         else {
-          await refreshMissingFiles();
-          return UnmodifiableListView(metadataBox.values);
+          // Hand the cached library back immediately and merge newly added
+          // files in the background so startup never waits on a media store
+          // query.
+          final UnmodifiableListView<MusicMetadata> cachedMetadata =
+              UnmodifiableListView(metadataBox.values);
+          _scheduleMissingFilesRefresh();
+          return cachedMetadata;
         }
       }
     } catch (e) {
@@ -199,40 +209,71 @@ class AudioFilesServiceNotifier
         .syncDirectoryRows(parentDirectoryPaths: parentDirectoryPaths);
   }
 
+  /// Runs [refreshMissingFiles] once the current provider build has handed
+  /// its state back so the background merge can update the UI afterwards.
+  void _scheduleMissingFilesRefresh() {
+    unawaited(
+      Future<void>.delayed(Duration.zero, () async {
+        try {
+          await refreshMissingFiles();
+        } catch (e) {
+          debugPrint("Background missing files refresh failed: $e");
+        }
+      }),
+    );
+  }
+
   /// Parses audio files that are not cached yet and are not excluded,
   /// merging them into the metadata cache. Android only: relies on the
   /// media store to enumerate candidate files.
   Future<void> refreshMissingFiles() async {
-    if (kIsWeb ||
-        !Platform.isAndroid ||
-        ref.read(settingsPreferencesControllerProvider).fetchOnlineMusic) {
+    if (_isMissingFilesRefreshInProgress) {
       return;
     }
-    final Box<MusicMetadata> metadataBox = Hive.box<MusicMetadata>(
-      Constants.metadataBoxName,
-    );
-    final List<String> filePaths = await _queryMediaStorePaths();
-    await _syncExcludeRows(filePaths);
-    final Set<String> cachedFilePaths = metadataBox.values
-        .map((musicMetadata) => musicMetadata.filePath)
-        .whereType<String>()
-        .toSet();
-    final List<String> missingPaths = _filterExcludedPaths(
-      filePaths,
-    ).where((path) => !cachedFilePaths.contains(path)).toList(growable: false);
-    if (missingPaths.isEmpty) {
-      return;
+    _isMissingFilesRefreshInProgress = true;
+    try {
+      if (kIsWeb ||
+          !Platform.isAndroid ||
+          ref.read(settingsPreferencesControllerProvider).fetchOnlineMusic) {
+        return;
+      }
+      final Box<MusicMetadata> metadataBox = Hive.box<MusicMetadata>(
+        Constants.metadataBoxName,
+      );
+      final List<String> filePaths = await _queryMediaStorePaths();
+      await _syncExcludeRows(filePaths);
+      final Set<String> cachedFilePaths = metadataBox.values
+          .map((musicMetadata) => musicMetadata.filePath)
+          .whereType<String>()
+          .toSet();
+      final List<String> missingPaths = _filterExcludedPaths(
+        filePaths,
+      ).where((path) => !cachedFilePaths.contains(path)).toList(
+            growable: false,
+          );
+      if (missingPaths.isEmpty) {
+        return;
+      }
+      final List<MusicMetadata> result = await compute(
+        ref.read(metadataReaderRepositoryProvider).extractMetadataFromFiles,
+        missingPaths,
+      );
+      final int startIndex = metadataBox.length;
+      final List<MusicMetadata> adjustedResult = [
+        for (final (int index, MusicMetadata metadata) in result.indexed)
+          metadata.copyWith(originalSongIndex: startIndex + index),
+      ];
+      await metadataBox.addAll(adjustedResult);
+      try {
+        state = AsyncData(UnmodifiableListView(metadataBox.values));
+      } catch (e) {
+        // The notifier may have been replaced by a full rescan while this
+        // background refresh was running; the replacement picks the merged
+        // cache up on its next build.
+        debugPrint("Skipped state update after background refresh: $e");
+      }
+    } finally {
+      _isMissingFilesRefreshInProgress = false;
     }
-    final List<MusicMetadata> result = await compute(
-      ref.read(metadataReaderRepositoryProvider).extractMetadataFromFiles,
-      missingPaths,
-    );
-    final int startIndex = metadataBox.length;
-    final List<MusicMetadata> adjustedResult = [
-      for (final (int index, MusicMetadata metadata) in result.indexed)
-        metadata.copyWith(originalSongIndex: startIndex + index),
-    ];
-    await metadataBox.addAll(adjustedResult);
-    state = AsyncData(UnmodifiableListView(metadataBox.values));
   }
 }
