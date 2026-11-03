@@ -137,6 +137,20 @@ class _SplitScreenPlaceholderState extends ConsumerState<SplitScreenPlaceholder>
           icon: CupertinoIcons.textformat_size,
           contentText: '${currentSettings.noteFontSize}',
         );
+      } else if (splitScreenType == SplitScreenType.screenBackgroundColor) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.screenBackgroundColorSettingTitle,
+          icon: CupertinoIcons.paintbrush,
+          contentText: currentSettings.screenBackgroundColor.backgroundTitle(
+            context,
+          ),
+        );
+      } else if (splitScreenType == SplitScreenType.fontColor) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.fontColorSettingTitle,
+          icon: CupertinoIcons.textformat,
+          contentText: currentSettings.fontColor.fontTitle(context),
+        );
       } else if (splitScreenType == SplitScreenType.clickWheelSize) {
         splitScreenWidget = IconPreviewWidget(
           titleText: context.localization.clickWheelSizeSettingTitle,

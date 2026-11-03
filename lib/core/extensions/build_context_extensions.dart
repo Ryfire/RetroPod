@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:retropod/core/constants/app_color_scheme.dart';
+import 'package:retropod/core/widgets/app_colors_scope.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/l10n/generated/app_localizations.dart';
 
 extension BuildContextExtensions on BuildContext {
@@ -20,29 +22,72 @@ extension BuildContextExtensions on BuildContext {
 }
 
 extension BuildContextColorExtensions on BuildContext {
-  Color get appBackgroundColor =>
-      AppColorScheme.screenBackground.resolveFrom(this);
+  /// The effective screen background: the picked color when the Screen
+  /// Background setting is set, otherwise the theme color.
+  Color get appBackgroundColor {
+    final AppColorsScope? scope = AppColorsScope.maybeOf(this);
+    return scope?.backgroundColor ??
+        AppColorScheme.screenBackground.resolveFrom(this);
+  }
 
-  Color get appSurfaceColor => AppColorScheme.surface.resolveFrom(this);
+  Color get appSurfaceColor {
+    final AppColorsScope? scope = AppColorsScope.maybeOf(this);
+    return scope?.backgroundColor ?? AppColorScheme.surface.resolveFrom(this);
+  }
 
-  Color get appPrimaryTextColor => AppColorScheme.primaryText.resolveFrom(this);
+  /// The effective primary text color: the pinned font color, the Auto
+  /// contrast color derived from the picked background, or the theme
+  /// color when no override is active.
+  Color get appPrimaryTextColor {
+    return _fontColor(
+      defaultColor: AppColorScheme.primaryText.resolveFrom(this),
+    );
+  }
 
-  Color get appSecondaryTextColor =>
-      AppColorScheme.secondaryText.resolveFrom(this);
+  Color get appSecondaryTextColor {
+    final AppColorsScope? scope = AppColorsScope.maybeOf(this);
+    if (scope == null ||
+        (scope.fontColor == null && scope.backgroundColor == null)) {
+      return AppColorScheme.secondaryText.resolveFrom(this);
+    }
+    return appPrimaryTextColor.withValues(alpha: 0.6);
+  }
 
-  Color get appInverseTextColor => AppColorScheme.inverseText.resolveFrom(this);
+  /// Text color on highlighted rows. The selection gradient does not
+  /// depend on the picked background, so this keeps following the theme.
+  Color get appInverseTextColor =>
+      AppColorScheme.inverseText.resolveFrom(this);
 
   Color get appOutlineColor => AppColorScheme.outline.resolveFrom(this);
 
   Color get appDeviceScreenBorderColor =>
       AppColorScheme.deviceScreenBorder.resolveFrom(this);
 
-  Color get appDeviceScreenBackgroundColor =>
-      AppColorScheme.deviceScreenBackground.resolveFrom(this);
+  Color get appDeviceScreenBackgroundColor {
+    final AppColorsScope? scope = AppColorsScope.maybeOf(this);
+    return scope?.backgroundColor ??
+        AppColorScheme.deviceScreenBackground.resolveFrom(this);
+  }
 
   Color get appControlSurfaceColor =>
       AppColorScheme.controlSurface.resolveFrom(this);
 
-  Color get appIconEmphasisColor =>
-      AppColorScheme.iconEmphasis.resolveFrom(this);
+  Color get appIconEmphasisColor {
+    return _fontColor(
+      defaultColor: AppColorScheme.iconEmphasis.resolveFrom(this),
+    );
+  }
+
+  /// Resolves the font color for the current scope: pinned color, Auto
+  /// contrast color derived from the picked background, or [defaultColor]
+  /// when no scope or no overrides are present.
+  Color _fontColor({required Color defaultColor}) {
+    final AppColorsScope? scope = AppColorsScope.maybeOf(this);
+    if (scope == null) return defaultColor;
+    final Color? pinned = scope.fontColor;
+    if (pinned != null) return pinned;
+    final Color? background = scope.backgroundColor;
+    if (background == null) return defaultColor;
+    return ScreenColor.autoContrastTextColor(background);
+  }
 }

@@ -14,6 +14,7 @@ enum ClickWheelSpeed {
   veryCoarse(4),
   coarse(8),
   medium(16),
+  mediumFine(24),
   fine(32),
   veryFine(64),
   ultraFine(96);
@@ -87,6 +88,8 @@ enum ClickWheelSpeed {
         return context.localization.coarse;
       case medium:
         return context.localization.medium;
+      case mediumFine:
+        return context.localization.mediumFine;
       case fine:
         return context.localization.fine;
       case veryFine:

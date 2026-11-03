@@ -26,6 +26,7 @@ import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/features/settings/models/settings_preferences_model.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:retropod/features/settings/repository/settings_preferences_repository.dart';
@@ -82,6 +83,12 @@ class SettingsPreferencesControllerNotifier
         settingsPreferencesRepository.getNoteFontColor(),
       ),
       noteFontSize: settingsPreferencesRepository.getNoteFontSize(),
+      screenBackgroundColor: ScreenColor.fromName(
+        settingsPreferencesRepository.getScreenBackgroundColor(),
+      ),
+      fontColor: ScreenColor.fromName(
+        settingsPreferencesRepository.getFontColor(),
+      ),
     );
   }
 
@@ -189,6 +196,26 @@ class SettingsPreferencesControllerNotifier
         .read(settingsPreferencesRepositoryProvider)
         .setNoteFontSize(noteFontSize: clamped);
     await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
+  }
+
+  Future<void> setScreenBackgroundColor(ScreenColor screenColor) async {
+    if (state.screenBackgroundColor == screenColor) {
+      return;
+    }
+    state = state.copyWith(screenBackgroundColor: screenColor);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setScreenBackgroundColor(screenBackgroundColorName: screenColor.name);
+  }
+
+  Future<void> setFontColor(ScreenColor fontColor) async {
+    if (state.fontColor == fontColor) {
+      return;
+    }
+    state = state.copyWith(fontColor: fontColor);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setFontColor(fontColorName: fontColor.name);
   }
 
   Future<void> toggleClickWheelSize() async {
@@ -397,6 +424,12 @@ class SettingsPreferencesControllerNotifier
         .read(settingsPreferencesRepositoryProvider)
         .setNoteFontSize(noteFontSize: Constants.defaultNoteFontSize);
     await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setScreenBackgroundColor(screenBackgroundColorName: ScreenColor.theme.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setFontColor(fontColorName: ScreenColor.theme.name);
     ref.invalidateSelf();
   }
 

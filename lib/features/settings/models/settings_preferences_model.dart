@@ -7,6 +7,7 @@ import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 
 class SettingsPreferencesModel {
@@ -27,6 +28,8 @@ class SettingsPreferencesModel {
   final DeviceSkin deviceSkin;
   final NoteFontColor noteFontColor;
   final int noteFontSize;
+  final ScreenColor screenBackgroundColor;
+  final ScreenColor fontColor;
 
   SettingsPreferencesModel({
     required this.languageLocaleCode,
@@ -46,6 +49,8 @@ class SettingsPreferencesModel {
     this.deviceSkin = DeviceSkin.classic,
     this.noteFontColor = NoteFontColor.theme,
     this.noteFontSize = Constants.defaultNoteFontSize,
+    this.screenBackgroundColor = ScreenColor.theme,
+    this.fontColor = ScreenColor.theme,
   });
 
   SettingsPreferencesModel copyWith({
@@ -66,6 +71,8 @@ class SettingsPreferencesModel {
     DeviceSkin? deviceSkin,
     NoteFontColor? noteFontColor,
     int? noteFontSize,
+    ScreenColor? screenBackgroundColor,
+    ScreenColor? fontColor,
   }) {
     return SettingsPreferencesModel(
       languageLocaleCode: languageLocaleCode ?? this.languageLocaleCode,
@@ -86,6 +93,8 @@ class SettingsPreferencesModel {
       deviceSkin: deviceSkin ?? this.deviceSkin,
       noteFontColor: noteFontColor ?? this.noteFontColor,
       noteFontSize: noteFontSize ?? this.noteFontSize,
+      screenBackgroundColor: screenBackgroundColor ?? this.screenBackgroundColor,
+      fontColor: fontColor ?? this.fontColor,
     );
   }
 
@@ -108,7 +117,9 @@ class SettingsPreferencesModel {
         other.deviceSkin == deviceSkin &&
         other.appTheme == appTheme &&
         other.noteFontColor == noteFontColor &&
-        other.noteFontSize == noteFontSize;
+        other.noteFontSize == noteFontSize &&
+        other.screenBackgroundColor == screenBackgroundColor &&
+        other.fontColor == fontColor;
   }
 
   @override
@@ -130,5 +141,7 @@ class SettingsPreferencesModel {
     deviceSkin,
     noteFontColor,
     noteFontSize,
+    screenBackgroundColor,
+    fontColor,
   );
 }

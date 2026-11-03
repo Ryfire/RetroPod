@@ -22,30 +22,38 @@ enum AppTheme {
     }
   }
 
-  CupertinoThemeData toCupertinoTheme() {
+  /// [backgroundColor] and [textColor] are the picked Screen Background and
+  /// Font Color overrides; null keeps the theme's own colors.
+  CupertinoThemeData toCupertinoTheme({
+    Color? backgroundColor,
+    Color? textColor,
+  }) {
     switch (this) {
       case AppTheme.light:
-        return const CupertinoThemeData(
+        return CupertinoThemeData(
           brightness: Brightness.light,
-          scaffoldBackgroundColor: CupertinoColors.white,
-          barBackgroundColor: CupertinoColors.white,
+          scaffoldBackgroundColor:
+              backgroundColor ?? CupertinoColors.white,
+          barBackgroundColor: backgroundColor ?? CupertinoColors.white,
           primaryColor: CupertinoColors.activeBlue,
           textTheme: CupertinoTextThemeData(
             textStyle: TextStyle(
-              color: CupertinoColors.black,
+              color: textColor ?? CupertinoColors.black,
               fontFamily: Assets.appFont,
             ),
           ),
         );
       case AppTheme.dark:
-        return const CupertinoThemeData(
+        return CupertinoThemeData(
           brightness: Brightness.dark,
-          scaffoldBackgroundColor: Color(0xFF1F1F21),
-          barBackgroundColor: Color(0xFF2C2C2E),
+          scaffoldBackgroundColor:
+              backgroundColor ?? const Color(0xFF1F1F21),
+          barBackgroundColor:
+              backgroundColor ?? const Color(0xFF2C2C2E),
           primaryColor: CupertinoColors.activeBlue,
           textTheme: CupertinoTextThemeData(
             textStyle: TextStyle(
-              color: CupertinoColors.white,
+              color: textColor ?? CupertinoColors.white,
               fontFamily: Assets.appFont,
             ),
           ),

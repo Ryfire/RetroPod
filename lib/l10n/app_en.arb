@@ -552,6 +552,10 @@
   "@normal": {
     "description": "The text for normal click wheel step"
   },
+  "mediumFine": "Medium Fine",
+  "@mediumFine": {
+    "description": "The text for medium fine click wheel speed"
+  },
   "fine": "Fine",
   "@fine": {
     "description": "The text for fine click wheel step"
@@ -583,6 +587,10 @@
   "excludeDirectoriesScreenTitle": "Exclude Directories",
   "@excludeDirectoriesScreenTitle": {
     "description": "The title of the exclude directories screen"
+  },
+  "preventDuplicateTracksTitle": "Prevent Duplicates",
+  "@preventDuplicateTracksTitle": {
+    "description": "The title of the prevent duplicate tracks setting"
   },
   "addFolderNameFilterTile": "Add Folder Filter",
   "@addFolderNameFilterTile": {
@@ -763,13 +771,25 @@
   "@noteFontColorSettingTitle": {
     "description": "The setting title for the note reader font color"
   },
+  "screenBackgroundColorSettingTitle": "Screen Background",
+  "@screenBackgroundColorSettingTitle": {
+    "description": "The title of the screen background color setting"
+  },
+  "fontColorSettingTitle": "Font Color",
+  "@fontColorSettingTitle": {
+    "description": "The title of the font color setting"
+  },
+  "themeDefaultColorOption": "Theme Default",
+  "@themeDefaultColorOption": {
+    "description": "The text for the theme default screen background option"
+  },
+  "autoFontColorOption": "Auto",
+  "@autoFontColorOption": {
+    "description": "The text for the automatic contrast font color option"
+  },
   "noteFontSizeSettingTitle": "Note Font Size",
   "@noteFontSizeSettingTitle": {
     "description": "The setting title for the note reader font size"
-  },
-  "defaultFontColor": "Default",
-  "@defaultFontColor": {
-    "description": "The option to keep note text in the theme default color"
   },
   "noteMenuBookmark": "Add Bookmark",
   "@noteMenuBookmark": {

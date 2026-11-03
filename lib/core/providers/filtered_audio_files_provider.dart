@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/services/audio_files_service.dart';
 import 'package:retropod/core/utils/directory_exclusion.dart';
+import 'package:retropod/core/utils/duplicate_tracks.dart';
 import 'package:retropod/features/settings/controller/exclude_directories_controller.dart';
+import 'package:retropod/features/settings/controller/prevent_duplicate_tracks_controller.dart';
 
 final filteredAudioFilesProvider =
     FutureProvider<UnmodifiableListView<MusicMetadata>>((ref) async {
+      final preventDuplicates = ref.watch(preventDuplicateTracksProvider);
       // Load the audio files metadata
       final audioFilesMetadata = await ref.watch(
         audioFilesServiceProvider.future,
@@ -31,5 +34,9 @@ final filteredAudioFilesProvider =
         }
       }
 
-      return UnmodifiableListView(filteredList);
+      return UnmodifiableListView(
+        preventDuplicates
+            ? withoutDuplicateFileNames(filteredList)
+            : filteredList,
+      );
     });

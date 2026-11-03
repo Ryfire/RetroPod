@@ -10,6 +10,8 @@ enum SplitScreenType {
   deviceSkin,
   noteFontColor,
   noteFontSize,
+  screenBackgroundColor,
+  fontColor,
   clickWheelSize,
   clickWheelSpeed,
   clickWheelAcceleration,

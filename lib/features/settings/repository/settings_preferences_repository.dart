@@ -11,6 +11,7 @@ import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -154,6 +155,20 @@ class SettingsPreferencesRepository {
     return size.clamp(Constants.minNoteFontSize, Constants.maxNoteFontSize);
   }
 
+  String getScreenBackgroundColor() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.screenBackgroundColor.name,
+        ) ??
+        ScreenColor.theme.name;
+  }
+
+  String getFontColor() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.fontColor.name,
+        ) ??
+        ScreenColor.theme.name;
+  }
+
   Future<void> setLanguageLocaleCode({
     required String languageLocaleCode,
   }) async {
@@ -273,6 +288,22 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setInt(
       SharedPreferencesKeys.noteFontSize.name,
       noteFontSize.clamp(Constants.minNoteFontSize, Constants.maxNoteFontSize),
+    );
+  }
+
+  Future<void> setScreenBackgroundColor({
+    required String screenBackgroundColorName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.screenBackgroundColor.name,
+      screenBackgroundColorName,
+    );
+  }
+
+  Future<void> setFontColor({required String fontColorName}) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.fontColor.name,
+      fontColorName,
     );
   }
 

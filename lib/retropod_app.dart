@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/services/audio_files_service.dart';
+import 'package:retropod/core/widgets/app_colors_scope.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/l10n/generated/app_localizations.dart';
 
 class RetropodApp extends ConsumerStatefulWidget {
@@ -52,15 +54,36 @@ class _RetropodAppState extends ConsumerState<RetropodApp>
     final appTheme = ref.watch(
       settingsPreferencesControllerProvider.select((value) => value.appTheme),
     );
+    final screenBackgroundColor = ref.watch(
+      settingsPreferencesControllerProvider.select(
+        (value) => value.screenBackgroundColor,
+      ),
+    );
+    final fontColor = ref.watch(
+      settingsPreferencesControllerProvider.select((value) => value.fontColor),
+    );
+    final Color? backgroundOverride = screenBackgroundColor.color;
+    final Color? fontOverride = fontColor.color;
+    final Color? effectiveFontColor = fontOverride ??
+        (backgroundOverride == null
+            ? null
+            : ScreenColor.autoContrastTextColor(backgroundOverride));
     final router = ref.watch(routerProvider);
-    return CupertinoApp.router(
-      onGenerateTitle: (context) => context.localization.appTitle,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
-      locale: Locale(languageLocaleCode),
-      theme: appTheme.toCupertinoTheme(),
+    return AppColorsScope(
+      backgroundColor: backgroundOverride,
+      fontColor: fontOverride,
+      child: CupertinoApp.router(
+        onGenerateTitle: (context) => context.localization.appTitle,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        debugShowCheckedModeBanner: false,
+        routerConfig: router,
+        locale: Locale(languageLocaleCode),
+        theme: appTheme.toCupertinoTheme(
+          backgroundColor: backgroundOverride,
+          textColor: effectiveFontColor,
+        ),
+      ),
     );
   }
 }

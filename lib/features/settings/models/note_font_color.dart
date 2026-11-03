@@ -32,7 +32,7 @@ enum NoteFontColor {
   String title(BuildContext context) {
     switch (this) {
       case theme:
-        return context.localization.defaultFontColor;
+        return context.localization.autoFontColorOption;
       default:
         return DeviceColor.fromName(name).title(context);
     }

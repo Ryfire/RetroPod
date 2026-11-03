@@ -8,8 +8,10 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
+import 'package:retropod/core/widgets/app_colors_scope.dart';
 import 'package:retropod/features/app_startup/screens/app_startup_screen.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -48,6 +50,20 @@ class DevelopmentRetropodApp extends ConsumerWidget {
     final appTheme = ref.watch(
       settingsPreferencesControllerProvider.select((value) => value.appTheme),
     );
+    final screenBackgroundColor = ref.watch(
+      settingsPreferencesControllerProvider.select(
+        (value) => value.screenBackgroundColor,
+      ),
+    );
+    final fontColor = ref.watch(
+      settingsPreferencesControllerProvider.select((value) => value.fontColor),
+    );
+    final Color? backgroundOverride = screenBackgroundColor.color;
+    final Color? fontOverride = fontColor.color;
+    final Color? effectiveFontColor = fontOverride ??
+        (backgroundOverride == null
+            ? null
+            : ScreenColor.autoContrastTextColor(backgroundOverride));
     final router = ref.watch(routerProvider);
     final debuggerTools = ref.watch(debuggerToolsProvider);
     debugRepaintRainbowEnabled = debuggerTools.debugRepaintRainbowEnabled;
@@ -56,19 +72,26 @@ class DevelopmentRetropodApp extends ConsumerWidget {
     debugPaintPointersEnabled = debuggerTools.debugPaintPointersEnabled;
     debugPaintLayerBordersEnabled = debuggerTools.debugPaintLayerBordersEnabled;
 
-    return CupertinoApp.router(
-      locale: Locale(languageLocaleCode),
-      builder: DevicePreview.appBuilder,
-      onGenerateTitle: (context) => context.localization.appTitle,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      showPerformanceOverlay: debuggerTools.showPerformanceOverlay,
-      showSemanticsDebugger: debuggerTools.showSemanticsDebugger,
-      checkerboardOffscreenLayers: debuggerTools.checkerboardOffscreenLayers,
-      checkerboardRasterCacheImages:
-          debuggerTools.checkerboardRasterCacheImages,
-      routerConfig: router,
-      theme: appTheme.toCupertinoTheme(),
+    return AppColorsScope(
+      backgroundColor: backgroundOverride,
+      fontColor: fontOverride,
+      child: CupertinoApp.router(
+        locale: Locale(languageLocaleCode),
+        builder: DevicePreview.appBuilder,
+        onGenerateTitle: (context) => context.localization.appTitle,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        showPerformanceOverlay: debuggerTools.showPerformanceOverlay,
+        showSemanticsDebugger: debuggerTools.showSemanticsDebugger,
+        checkerboardOffscreenLayers: debuggerTools.checkerboardOffscreenLayers,
+        checkerboardRasterCacheImages:
+            debuggerTools.checkerboardRasterCacheImages,
+        routerConfig: router,
+        theme: appTheme.toCupertinoTheme(
+          backgroundColor: backgroundOverride,
+          textColor: effectiveFontColor,
+        ),
+      ),
     );
   }
 }

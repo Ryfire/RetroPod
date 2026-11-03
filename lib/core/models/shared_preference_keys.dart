@@ -20,5 +20,8 @@ enum SharedPreferencesKeys {
   isInputTextBarFirstTime,
   noteFontColor,
   noteFontSize,
+  preventDuplicateTracks,
+  screenBackgroundColor,
+  fontColor,
   ratingSnapshot,
 }

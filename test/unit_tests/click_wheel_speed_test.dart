@@ -40,13 +40,13 @@ void main() {
         ClickWheelSpeed.ultraFine,
       );
       // Medium high sensitivity + fine step was 18 degrees per step (20
-      // steps per revolution), which snaps to medium (16).
+      // steps per revolution), which snaps to mediumFine (24).
       expect(
         ClickWheelSpeed.fromLegacySettings(
           thresholdDegrees: 36,
           stepMultiplier: 2,
         ),
-        ClickWheelSpeed.medium,
+        ClickWheelSpeed.mediumFine,
       );
     });
 
