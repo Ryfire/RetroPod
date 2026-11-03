@@ -107,6 +107,11 @@ enum DeviceColor {
   Color get textColor =>
       style.solidFrameColor ?? style.frameGradientColors.first;
 
+  /// The darker gradient end, for contexts where the swatch must read as a
+  /// saturated, readable text color (screen font color setting).
+  Color get deepTextColor =>
+      style.solidFrameColor ?? style.frameGradientColors.last;
+
   DeviceColorStyle get style {
     switch (this) {
       case DeviceColor.silver:

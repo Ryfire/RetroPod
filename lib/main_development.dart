@@ -58,8 +58,8 @@ class DevelopmentRetropodApp extends ConsumerWidget {
     final fontColor = ref.watch(
       settingsPreferencesControllerProvider.select((value) => value.fontColor),
     );
-    final Color? backgroundOverride = screenBackgroundColor.color;
-    final Color? fontOverride = fontColor.color;
+    final Color? backgroundOverride = screenBackgroundColor.backgroundColor;
+    final Color? fontOverride = fontColor.fontSwatchColor;
     final Color? effectiveFontColor = fontOverride ??
         (backgroundOverride == null
             ? null

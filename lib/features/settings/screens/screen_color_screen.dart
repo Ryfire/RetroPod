@@ -70,6 +70,17 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
     }
   }
 
+  /// Background rows show the light gradient end, font rows the darker end
+  /// so the font palette reads as saturated text colors.
+  Color? _swatchOf(ScreenColor screenColor) {
+    switch (widget.role) {
+      case ScreenColorRole.background:
+        return screenColor.backgroundColor;
+      case ScreenColorRole.font:
+        return screenColor.fontSwatchColor;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -84,6 +95,7 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
                 itemCount: displayItems.length,
                 prototypeItem: _ScreenColorOptionTile(
                   screenColor: displayItems.first,
+                  swatchOf: _swatchOf,
                   optionTitle: _optionTitle,
                   isSelected: false,
                   onTap: () {},
@@ -93,6 +105,7 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
                   final isSelected = selectedDisplayItem == index;
                   return _ScreenColorOptionTile(
                     screenColor: screenColor,
+                    swatchOf: _swatchOf,
                     optionTitle: _optionTitle,
                     isSelected: isSelected,
                     onTap: () async => _selectColor(index),
@@ -109,12 +122,14 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
 
 class _ScreenColorOptionTile extends StatelessWidget {
   final ScreenColor screenColor;
+  final Color? Function(ScreenColor) swatchOf;
   final String Function(BuildContext, ScreenColor) optionTitle;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _ScreenColorOptionTile({
     required this.screenColor,
+    required this.swatchOf,
     required this.optionTitle,
     required this.isSelected,
     required this.onTap,
@@ -122,7 +137,7 @@ class _ScreenColorOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color? color = screenColor.color;
+    final Color? color = swatchOf(screenColor);
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(

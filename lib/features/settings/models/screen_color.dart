@@ -51,14 +51,25 @@ enum ScreenColor {
     }
   }
 
-  /// The pinned color, or null when the setting should follow the theme
-  /// (background) or resolve automatically (font).
-  Color? get color {
+  /// The light end of the device color gradient, used as a screen
+  /// background swatch, or null when the setting should follow the theme.
+  Color? get backgroundColor {
     switch (this) {
       case theme:
         return null;
       default:
         return DeviceColor.fromName(name).textColor;
+    }
+  }
+
+  /// The darker gradient end, used as a font color swatch so the palette
+  /// reads as saturated text colors instead of pastels.
+  Color? get fontSwatchColor {
+    switch (this) {
+      case theme:
+        return null;
+      default:
+        return DeviceColor.fromName(name).deepTextColor;
     }
   }
 

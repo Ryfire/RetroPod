@@ -1,39 +1,50 @@
-import 'package:flutter/painting.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
 
 void main() {
   group('screen_color', () {
     test('theme resolves to no override', () {
-      expect(ScreenColor.theme.color, isNull);
+      expect(ScreenColor.theme.backgroundColor, isNull);
+      expect(ScreenColor.theme.fontSwatchColor, isNull);
     });
 
-    test('swatches resolve through the matching device color', () {
+    test('background swatches use the light gradient end', () {
+      expect(ScreenColor.blue.backgroundColor, const Color(0xFF9FD3FF));
+    });
+
+    test('font swatches use the darker gradient end', () {
+      expect(ScreenColor.blue.fontSwatchColor, const Color(0xFF0F4C9A));
       expect(
-        ScreenColor.blue.color,
-        ScreenColor.blue.color,
+        ScreenColor.blue.fontSwatchColor,
+        isNot(ScreenColor.blue.backgroundColor),
       );
-      expect(ScreenColor.blue.color, isNotNull);
-      // Distinct swatches must not collapse to the same color.
+      // Oled black stays pure black via its solid frame color.
+      expect(ScreenColor.oledBlack.fontSwatchColor, CupertinoColors.black);
+    });
+
+    test('lime and green font swatches are distinct', () {
       expect(
-        ScreenColor.blue.color,
-        isNot(ScreenColor.yellow.color),
+        ScreenColor.lime.fontSwatchColor,
+        isNot(ScreenColor.green.fontSwatchColor),
       );
+      // ...while their background swatches were the near-identical pale
+      // greens that motivated this split.
       expect(
-        ScreenColor.oledBlack.color,
-        isNot(ScreenColor.silver.color),
+        ScreenColor.lime.backgroundColor,
+        isNot(ScreenColor.green.backgroundColor),
       );
     });
 
     test('auto contrast picks dark text on light backgrounds', () {
       expect(
         ScreenColor.autoContrastTextColor(
-          ScreenColor.yellow.color!,
+          ScreenColor.yellow.backgroundColor!,
         ),
         const Color(0xFF101214),
       );
       expect(
-        ScreenColor.autoContrastTextColor(ScreenColor.silver.color!),
+        ScreenColor.autoContrastTextColor(ScreenColor.silver.backgroundColor!),
         const Color(0xFF101214),
       );
     });
@@ -41,7 +52,7 @@ void main() {
     test('auto contrast picks light text on dark backgrounds', () {
       expect(
         ScreenColor.autoContrastTextColor(
-          ScreenColor.oledBlack.color!,
+          ScreenColor.oledBlack.fontSwatchColor!,
         ),
         const Color(0xFFE6E7EA),
       );
