@@ -58,6 +58,29 @@ extension BuildContextColorExtensions on BuildContext {
   Color get appInverseTextColor =>
       AppColorScheme.inverseText.resolveFrom(this);
 
+  /// The effective list selection highlight: the picked Highlight Color,
+  /// or the theme's static blue when no override is active.
+  Color get appHighlightColor {
+    final AppColorsScope? scope = AppColorsScope.maybeOf(this);
+    return scope?.highlightColor ??
+        AppColorScheme.selectedTile.resolveFrom(this);
+  }
+
+  /// The top-to-bottom gradient ends for a highlighted row, derived from
+  /// [appHighlightColor] so a picked highlight renders with the same
+  /// subtle darkening the theme's blue gradient has.
+  List<Color> get appHighlightGradient {
+    final Color highlight = appHighlightColor;
+    return [
+      Color.lerp(highlight, CupertinoColors.white, 0.15)!,
+      Color.lerp(highlight, CupertinoColors.black, 0.18)!,
+    ];
+  }
+
+  /// Text color that stays readable on any picked highlight color.
+  Color get appHighlightTextColor =>
+      ScreenColor.autoContrastTextColor(appHighlightColor);
+
   Color get appOutlineColor => AppColorScheme.outline.resolveFrom(this);
 
   Color get appDeviceScreenBorderColor =>

@@ -12,6 +12,7 @@ import 'package:retropod/features/menu/models/split_screen_type.dart';
 import 'package:retropod/features/now_playing/provider/now_playing_details_provider.dart';
 import 'package:retropod/features/settings/controller/prevent_duplicate_tracks_controller.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
+import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/features/settings/models/settings_preferences_model.dart';
 import 'package:retropod/features/settings/widgets/settings_list_tile.dart';
 import 'package:retropod/features/status_bar/widgets/status_bar.dart';
@@ -25,8 +26,7 @@ enum _SettingsDisplayItems {
   deviceColor,
   deviceSkin,
   noteFontSize,
-  screenBackgroundColor,
-  fontColor,
+  screenColors,
   noteFontColor,
   clickWheelSize,
   clickWheelSpeed,
@@ -65,10 +65,8 @@ enum _SettingsDisplayItems {
         return context.localization.noteFontColorSettingTitle;
       case noteFontSize:
         return context.localization.noteFontSizeSettingTitle;
-      case screenBackgroundColor:
-        return context.localization.screenBackgroundColorSettingTitle;
-      case fontColor:
-        return context.localization.fontColorSettingTitle;
+      case screenColors:
+        return context.localization.screenColorsSettingTitle;
       case clickWheelSize:
         return context.localization.clickWheelSizeSettingTitle;
       case clickWheelSpeed:
@@ -152,11 +150,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case _SettingsDisplayItems.noteFontSize:
         context.goNamed(Routes.noteFontSize.name);
         break;
-      case _SettingsDisplayItems.screenBackgroundColor:
-        context.goNamed(Routes.screenBackgroundColor.name);
-        break;
-      case _SettingsDisplayItems.fontColor:
-        context.goNamed(Routes.fontColor.name);
+      case _SettingsDisplayItems.screenColors:
+        context.goNamed(Routes.screenColors.name);
         break;
       case _SettingsDisplayItems.clickWheelSize:
         await ref
@@ -266,10 +261,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.noteFontColor.title(context);
       case _SettingsDisplayItems.noteFontSize:
         return '${settingsState.noteFontSize}';
-      case _SettingsDisplayItems.screenBackgroundColor:
-        return settingsState.screenBackgroundColor.backgroundTitle(context);
-      case _SettingsDisplayItems.fontColor:
-        return settingsState.fontColor.fontTitle(context);
+      case _SettingsDisplayItems.screenColors:
+        return settingsState.screenBackgroundColor == ScreenColor.theme &&
+                settingsState.fontColor == ScreenColor.theme &&
+                settingsState.highlightColor == ScreenColor.theme
+            ? context.localization.themeDefaultColorOption
+            : context.localization.customColorsValue;
       case _SettingsDisplayItems.clickWheelSize:
         return settingsState.clickWheelSize.title(context);
       case _SettingsDisplayItems.clickWheelSpeed:
@@ -319,13 +316,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
             SplitScreenType.noteFontSize;
         break;
-      case _SettingsDisplayItems.screenBackgroundColor:
+      case _SettingsDisplayItems.screenColors:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
-            SplitScreenType.screenBackgroundColor;
-        break;
-      case _SettingsDisplayItems.fontColor:
-        ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
-            SplitScreenType.fontColor;
+            SplitScreenType.screenColors;
         break;
       case _SettingsDisplayItems.appTheme:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =

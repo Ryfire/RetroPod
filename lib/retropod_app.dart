@@ -62,6 +62,11 @@ class _RetropodAppState extends ConsumerState<RetropodApp>
     final fontColor = ref.watch(
       settingsPreferencesControllerProvider.select((value) => value.fontColor),
     );
+    final highlightColor = ref.watch(
+      settingsPreferencesControllerProvider.select(
+        (value) => value.highlightColor,
+      ),
+    );
     final Color? backgroundOverride = screenBackgroundColor.backgroundColor;
     final Color? fontOverride = fontColor.fontSwatchColor;
     final Color? effectiveFontColor = fontOverride ??
@@ -72,6 +77,7 @@ class _RetropodAppState extends ConsumerState<RetropodApp>
     return AppColorsScope(
       backgroundColor: backgroundOverride,
       fontColor: fontOverride,
+      highlightColor: highlightColor.highlightSwatchColor,
       child: CupertinoApp.router(
         onGenerateTitle: (context) => context.localization.appTitle,
         localizationsDelegates: AppLocalizations.localizationsDelegates,

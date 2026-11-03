@@ -51,6 +51,16 @@ enum ScreenColor {
     }
   }
 
+  /// Label inside the Highlight Color picker.
+  String highlightTitle(BuildContext context) {
+    switch (this) {
+      case theme:
+        return context.localization.themeDefaultColorOption;
+      default:
+        return DeviceColor.fromName(name).title(context);
+    }
+  }
+
   /// The light end of the device color gradient, used as a screen
   /// background swatch, or null when the setting should follow the theme.
   Color? get backgroundColor {
@@ -65,6 +75,17 @@ enum ScreenColor {
   /// The darker gradient end, used as a font color swatch so the palette
   /// reads as saturated text colors instead of pastels.
   Color? get fontSwatchColor {
+    switch (this) {
+      case theme:
+        return null;
+      default:
+        return DeviceColor.fromName(name).deepTextColor;
+    }
+  }
+
+  /// The saturated device color used as the list selection highlight swatch,
+  /// or null when the highlight should follow the theme's static blue.
+  Color? get highlightSwatchColor {
     switch (this) {
       case theme:
         return null;

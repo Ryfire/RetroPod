@@ -12,6 +12,7 @@ import 'package:retropod/features/menu/widgets/now_playing_preview_widget.dart';
 import 'package:retropod/features/menu/widgets/settings_preview_widget.dart';
 import 'package:retropod/features/music/songs/provider/songs_provider.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
+import 'package:retropod/features/settings/widgets/screen_colors_preview_widget.dart';
 import 'package:retropod/features/sleep_timer/widgets/sleep_timer_preview_widget.dart';
 
 class SplitScreenViewController {
@@ -151,6 +152,9 @@ class _SplitScreenPlaceholderState extends ConsumerState<SplitScreenPlaceholder>
           icon: CupertinoIcons.textformat,
           contentText: currentSettings.fontColor.fontTitle(context),
         );
+      } else if (splitScreenType == SplitScreenType.highlightColor ||
+          splitScreenType == SplitScreenType.screenColors) {
+        splitScreenWidget = const ScreenColorsPreviewWidget();
       } else if (splitScreenType == SplitScreenType.clickWheelSize) {
         splitScreenWidget = IconPreviewWidget(
           titleText: context.localization.clickWheelSizeSettingTitle,

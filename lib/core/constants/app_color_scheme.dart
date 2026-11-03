@@ -69,4 +69,11 @@ class AppColorScheme {
         color: CupertinoColors.white,
         darkColor: Color(0xFF1A1C1F),
       );
+
+  /// The default list selection highlight (the static theme blue).
+  static const CupertinoDynamicColor selectedTile =
+      CupertinoDynamicColor.withBrightness(
+        color: Color(0xFF70A9DB),
+        darkColor: Color(0xFF5382C9),
+      );
 }

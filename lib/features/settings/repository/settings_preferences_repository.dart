@@ -169,6 +169,13 @@ class SettingsPreferencesRepository {
         ScreenColor.theme.name;
   }
 
+  String getHighlightColor() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.highlightColor.name,
+        ) ??
+        ScreenColor.theme.name;
+  }
+
   Future<void> setLanguageLocaleCode({
     required String languageLocaleCode,
   }) async {
@@ -304,6 +311,13 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.fontColor.name,
       fontColorName,
+    );
+  }
+
+  Future<void> setHighlightColor({required String highlightColorName}) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.highlightColor.name,
+      highlightColorName,
     );
   }
 

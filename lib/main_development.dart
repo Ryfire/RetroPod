@@ -58,6 +58,11 @@ class DevelopmentRetropodApp extends ConsumerWidget {
     final fontColor = ref.watch(
       settingsPreferencesControllerProvider.select((value) => value.fontColor),
     );
+    final highlightColor = ref.watch(
+      settingsPreferencesControllerProvider.select(
+        (value) => value.highlightColor,
+      ),
+    );
     final Color? backgroundOverride = screenBackgroundColor.backgroundColor;
     final Color? fontOverride = fontColor.fontSwatchColor;
     final Color? effectiveFontColor = fontOverride ??
@@ -75,6 +80,7 @@ class DevelopmentRetropodApp extends ConsumerWidget {
     return AppColorsScope(
       backgroundColor: backgroundOverride,
       fontColor: fontOverride,
+      highlightColor: highlightColor.highlightSwatchColor,
       child: CupertinoApp.router(
         locale: Locale(languageLocaleCode),
         builder: DevicePreview.appBuilder,

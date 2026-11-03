@@ -30,6 +30,7 @@ class SettingsPreferencesModel {
   final int noteFontSize;
   final ScreenColor screenBackgroundColor;
   final ScreenColor fontColor;
+  final ScreenColor highlightColor;
 
   SettingsPreferencesModel({
     required this.languageLocaleCode,
@@ -51,6 +52,7 @@ class SettingsPreferencesModel {
     this.noteFontSize = Constants.defaultNoteFontSize,
     this.screenBackgroundColor = ScreenColor.theme,
     this.fontColor = ScreenColor.theme,
+    this.highlightColor = ScreenColor.theme,
   });
 
   SettingsPreferencesModel copyWith({
@@ -73,6 +75,7 @@ class SettingsPreferencesModel {
     int? noteFontSize,
     ScreenColor? screenBackgroundColor,
     ScreenColor? fontColor,
+    ScreenColor? highlightColor,
   }) {
     return SettingsPreferencesModel(
       languageLocaleCode: languageLocaleCode ?? this.languageLocaleCode,
@@ -95,6 +98,7 @@ class SettingsPreferencesModel {
       noteFontSize: noteFontSize ?? this.noteFontSize,
       screenBackgroundColor: screenBackgroundColor ?? this.screenBackgroundColor,
       fontColor: fontColor ?? this.fontColor,
+      highlightColor: highlightColor ?? this.highlightColor,
     );
   }
 
@@ -119,7 +123,8 @@ class SettingsPreferencesModel {
         other.noteFontColor == noteFontColor &&
         other.noteFontSize == noteFontSize &&
         other.screenBackgroundColor == screenBackgroundColor &&
-        other.fontColor == fontColor;
+        other.fontColor == fontColor &&
+        other.highlightColor == highlightColor;
   }
 
   @override
@@ -143,5 +148,6 @@ class SettingsPreferencesModel {
     noteFontSize,
     screenBackgroundColor,
     fontColor,
+    highlightColor,
   );
 }

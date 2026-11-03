@@ -3,7 +3,17 @@ import 'package:retropod/core/constants/app_palette.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final String emptyDescription;
-  const EmptyStateWidget({super.key, required this.emptyDescription});
+
+  /// Optional second line shown under the description in smaller, lighter
+  /// text, e.g. guidance on how to add items. When set the icon switches
+  /// from the music note to a document icon to match the guidance context.
+  final String? emptySubtitle;
+
+  const EmptyStateWidget({
+    super.key,
+    required this.emptyDescription,
+    this.emptySubtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +33,10 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              CupertinoIcons.music_note_2,
+            Icon(
+              emptySubtitle == null
+                  ? CupertinoIcons.music_note_2
+                  : CupertinoIcons.doc_text,
               size: 65,
               color: CupertinoColors.white,
             ),
@@ -37,6 +49,20 @@ class EmptyStateWidget extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            if (emptySubtitle != null) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  emptySubtitle!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: CupertinoColors.systemGrey,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

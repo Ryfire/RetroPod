@@ -9,7 +9,7 @@ import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/features/status_bar/widgets/status_bar.dart';
 
 /// Which preference a [ScreenColorScreen] instance edits.
-enum ScreenColorRole { background, font }
+enum ScreenColorRole { background, font, highlight }
 
 /// Picker screen shared by the Screen Background and Font Color settings.
 /// Rows show the swatch of each [ScreenColor]; the theme option is drawn as
@@ -49,6 +49,11 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
             .read(settingsPreferencesControllerProvider.notifier)
             .setFontColor(screenColor);
         break;
+      case ScreenColorRole.highlight:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .setHighlightColor(screenColor);
+        break;
     }
   }
 
@@ -58,6 +63,8 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
         return context.localization.screenBackgroundColorSettingTitle;
       case ScreenColorRole.font:
         return context.localization.fontColorSettingTitle;
+      case ScreenColorRole.highlight:
+        return context.localization.highlightColorSettingTitle;
     }
   }
 
@@ -67,6 +74,8 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
         return screenColor.backgroundTitle(context);
       case ScreenColorRole.font:
         return screenColor.fontTitle(context);
+      case ScreenColorRole.highlight:
+        return screenColor.highlightTitle(context);
     }
   }
 
@@ -78,6 +87,8 @@ class _ScreenColorScreenState extends ConsumerState<ScreenColorScreen>
         return screenColor.backgroundColor;
       case ScreenColorRole.font:
         return screenColor.fontSwatchColor;
+      case ScreenColorRole.highlight:
+        return screenColor.highlightSwatchColor;
     }
   }
 

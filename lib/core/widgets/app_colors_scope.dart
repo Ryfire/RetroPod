@@ -15,11 +15,16 @@ class AppColorsScope extends InheritedWidget {
   /// automatically from the background.
   final Color? fontColor;
 
+  /// Pinned list selection highlight color, null when following the theme's
+  /// static blue.
+  final Color? highlightColor;
+
   const AppColorsScope({
     super.key,
     required super.child,
     this.backgroundColor,
     this.fontColor,
+    this.highlightColor,
   });
 
   static AppColorsScope? maybeOf(BuildContext context) {

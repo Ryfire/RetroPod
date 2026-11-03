@@ -113,6 +113,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
           Expanded(
             child: EmptyStateWidget(
               emptyDescription: context.localization.notesEmpty,
+              emptySubtitle: context.localization.notesEmptyHint,
             ),
           ),
           _buildSearchTile(isSelected: selectedDisplayItem == 0),
@@ -166,16 +167,27 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
       child: Container(
         height: displayTileHeight,
         color: isSelected
-            ? CupertinoColors.systemBlue
-            : CupertinoColors.systemGroupedBackground.resolveFrom(context),
+            ? context.appHighlightColor
+            : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            const Icon(CupertinoIcons.search, size: 14),
+            Icon(
+              CupertinoIcons.search,
+              size: 14,
+              color: isSelected
+                  ? context.appHighlightTextColor
+                  : context.appPrimaryTextColor,
+            ),
             const SizedBox(width: 6),
             Text(
               context.localization.notesSearchTitle,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected
+                    ? context.appHighlightTextColor
+                    : context.appPrimaryTextColor,
+              ),
             ),
           ],
         ),
@@ -189,16 +201,27 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
       child: Container(
         height: displayTileHeight,
         color: isSelected
-            ? CupertinoColors.systemBlue
-            : CupertinoColors.systemGroupedBackground.resolveFrom(context),
+            ? context.appHighlightColor
+            : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            const Icon(CupertinoIcons.bookmark, size: 14),
+            Icon(
+              CupertinoIcons.bookmark,
+              size: 14,
+              color: isSelected
+                  ? context.appHighlightTextColor
+                  : context.appPrimaryTextColor,
+            ),
             const SizedBox(width: 6),
             Text(
               context.localization.notesBookmarksTitle,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected
+                    ? context.appHighlightTextColor
+                    : context.appPrimaryTextColor,
+              ),
             ),
           ],
         ),
@@ -212,16 +235,27 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
       child: Container(
         height: displayTileHeight,
         color: isSelected
-            ? CupertinoColors.systemBlue
-            : CupertinoColors.systemGroupedBackground.resolveFrom(context),
+            ? context.appHighlightColor
+            : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            const Icon(CupertinoIcons.refresh, size: 14),
+            Icon(
+              CupertinoIcons.refresh,
+              size: 14,
+              color: isSelected
+                  ? context.appHighlightTextColor
+                  : context.appPrimaryTextColor,
+            ),
             const SizedBox(width: 6),
             Text(
               context.localization.notesRefreshTitle,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected
+                    ? context.appHighlightTextColor
+                    : context.appPrimaryTextColor,
+              ),
             ),
           ],
         ),

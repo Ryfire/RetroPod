@@ -23,5 +23,6 @@ enum SharedPreferencesKeys {
   preventDuplicateTracks,
   screenBackgroundColor,
   fontColor,
+  highlightColor,
   ratingSnapshot,
 }

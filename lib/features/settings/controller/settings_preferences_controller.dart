@@ -89,6 +89,9 @@ class SettingsPreferencesControllerNotifier
       fontColor: ScreenColor.fromName(
         settingsPreferencesRepository.getFontColor(),
       ),
+      highlightColor: ScreenColor.fromName(
+        settingsPreferencesRepository.getHighlightColor(),
+      ),
     );
   }
 
@@ -216,6 +219,38 @@ class SettingsPreferencesControllerNotifier
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setFontColor(fontColorName: fontColor.name);
+  }
+
+  Future<void> setHighlightColor(ScreenColor highlightColor) async {
+    if (state.highlightColor == highlightColor) {
+      return;
+    }
+    state = state.copyWith(highlightColor: highlightColor);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setHighlightColor(highlightColorName: highlightColor.name);
+  }
+
+  /// Clears the Screen Background, Font Color and Highlight Color pins in
+  /// one tap, returning all three to the theme defaults without touching
+  /// any other preference such as the click wheel settings.
+  Future<void> resetScreenColors() async {
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setScreenBackgroundColor(
+          screenBackgroundColorName: ScreenColor.theme.name,
+        );
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setFontColor(fontColorName: ScreenColor.theme.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setHighlightColor(highlightColorName: ScreenColor.theme.name);
+    state = state.copyWith(
+      screenBackgroundColor: ScreenColor.theme,
+      fontColor: ScreenColor.theme,
+      highlightColor: ScreenColor.theme,
+    );
   }
 
   Future<void> toggleClickWheelSize() async {
@@ -426,10 +461,15 @@ class SettingsPreferencesControllerNotifier
     await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
     await ref
         .read(settingsPreferencesRepositoryProvider)
-        .setScreenBackgroundColor(screenBackgroundColorName: ScreenColor.theme.name);
+        .setScreenBackgroundColor(
+          screenBackgroundColorName: ScreenColor.theme.name,
+        );
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setFontColor(fontColorName: ScreenColor.theme.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setHighlightColor(highlightColorName: ScreenColor.theme.name);
     ref.invalidateSelf();
   }
 

@@ -12,6 +12,8 @@ enum SplitScreenType {
   noteFontSize,
   screenBackgroundColor,
   fontColor,
+  highlightColor,
+  screenColors,
   clickWheelSize,
   clickWheelSpeed,
   clickWheelAcceleration,

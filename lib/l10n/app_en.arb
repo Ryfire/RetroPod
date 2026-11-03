@@ -722,6 +722,10 @@
   "@notesEmpty": {
     "description": "Shown when no text files are found on the device"
   },
+  "notesEmptyHint": "Add .txt or .md files to Documents/Notes, then tap Refresh Notes",
+  "@notesEmptyHint": {
+    "description": "Guidance under the empty notes message explaining that notes are externally created text files in the Documents/Notes folder and are picked up via Refresh Notes"
+  },
   "notesRefreshTitle": "Refresh Notes",
   "@notesRefreshTitle": {
     "description": "Bottom tile that rescans the notes folder for changes"
@@ -779,6 +783,10 @@
   "@fontColorSettingTitle": {
     "description": "The title of the font color setting"
   },
+  "highlightColorSettingTitle": "Highlight Color",
+  "@highlightColorSettingTitle": {
+    "description": "The title of the list selection highlight color setting"
+  },
   "themeDefaultColorOption": "Theme Default",
   "@themeDefaultColorOption": {
     "description": "The text for the theme default screen background option"
@@ -786,6 +794,18 @@
   "autoFontColorOption": "Auto",
   "@autoFontColorOption": {
     "description": "The text for the automatic contrast font color option"
+  },
+  "screenColorsSettingTitle": "Screen Colors",
+  "@screenColorsSettingTitle": {
+    "description": "The title of the combined screen colors settings screen"
+  },
+  "resetScreenColorsTitle": "Reset to Theme Defaults",
+  "@resetScreenColorsTitle": {
+    "description": "The row that resets the screen background, font and highlight colors back to the theme defaults"
+  },
+  "customColorsValue": "Custom",
+  "@customColorsValue": {
+    "description": "The value shown on the Screen Colors setting when a custom color is pinned"
   },
   "noteFontSizeSettingTitle": "Note Font Size",
   "@noteFontSizeSettingTitle": {

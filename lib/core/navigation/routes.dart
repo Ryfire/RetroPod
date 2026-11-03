@@ -55,6 +55,7 @@ import 'package:retropod/features/settings/screens/language_selection_screen.dar
 import 'package:retropod/features/settings/screens/note_font_color_screen.dart';
 import 'package:retropod/features/settings/screens/note_font_size_screen.dart';
 import 'package:retropod/features/settings/screens/screen_color_screen.dart';
+import 'package:retropod/features/settings/screens/screen_colors_screen.dart';
 import 'package:retropod/features/settings/screens/settings_preferences_screen.dart';
 import 'package:retropod/features/settings/screens/skin_selection_screen.dart';
 import 'package:retropod/features/sleep_timer/screens/sleep_timer_screen.dart';
@@ -71,6 +72,8 @@ enum Routes {
   noteFontSize,
   screenBackgroundColor,
   fontColor,
+  highlightColor,
+  screenColors,
   excludeDirectories,
   nowPlaying,
   nowPlayingMoreOptions,
@@ -140,6 +143,10 @@ enum Routes {
         return context.localization.screenBackgroundColorSettingTitle;
       case fontColor:
         return context.localization.fontColorSettingTitle;
+      case highlightColor:
+        return context.localization.highlightColorSettingTitle;
+      case screenColors:
+        return context.localization.screenColorsSettingTitle;
       case excludeDirectories:
         return context.localization.excludeDirectoriesScreenTitle;
       case nowPlaying:
@@ -348,6 +355,24 @@ final routerProvider = Provider(
                             role: ScreenColorRole.font,
                           ),
                         ),
+                      ),
+                      GoRoute(
+                        path: Routes.highlightColor.name,
+                        name: Routes.highlightColor.name,
+                        parentNavigatorKey: menuNavigatorKey,
+                        pageBuilder: (context, state) => const CupertinoPage(
+                          child: ScreenColorScreen(
+                            route: Routes.highlightColor,
+                            role: ScreenColorRole.highlight,
+                          ),
+                        ),
+                      ),
+                      GoRoute(
+                        path: Routes.screenColors.name,
+                        name: Routes.screenColors.name,
+                        parentNavigatorKey: menuNavigatorKey,
+                        pageBuilder: (context, state) =>
+                            const CupertinoPage(child: ScreenColorsScreen()),
                       ),
                       GoRoute(
                         path: Routes.excludeDirectories.name,
