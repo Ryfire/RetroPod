@@ -15,7 +15,6 @@ import 'package:retropod/features/device/models/click_wheel_rotation_tracker.dar
 import 'package:retropod/features/device/models/device_action.dart';
 import 'package:retropod/features/device/services/device_buttons_service_provider.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
-import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 
@@ -113,14 +112,9 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
         (settings) => settings.clickWheelSize,
       ),
     );
-    final clickWheelSensitivity = ref.watch(
+    final clickWheelSpeed = ref.watch(
       settingsPreferencesControllerProvider.select(
-        (settings) => settings.clickWheelSensitivity,
-      ),
-    );
-    final clickWheelStep = ref.watch(
-      settingsPreferencesControllerProvider.select(
-        (settings) => settings.clickWheelStep,
+        (settings) => settings.clickWheelSpeed,
       ),
     );
     final clickWheelAcceleration = ref.watch(
@@ -145,27 +139,7 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
         break;
     }
 
-    late final double baseThresholdDegrees;
-    switch (clickWheelSensitivity) {
-      case ClickWheelSensitivity.veryLow:
-        baseThresholdDegrees = Constants.clickWheelVeryLowSensitivityThreshold;
-        break;
-      case ClickWheelSensitivity.low:
-        baseThresholdDegrees = Constants.clickWheelLowSensitivityThreshold;
-        break;
-      case ClickWheelSensitivity.medium:
-        baseThresholdDegrees = Constants.clickWheelMediumSensitivityThreshold;
-        break;
-      case ClickWheelSensitivity.mediumHigh:
-        baseThresholdDegrees =
-            Constants.clickWheelMediumHighSensitivityThreshold;
-        break;
-      case ClickWheelSensitivity.high:
-        baseThresholdDegrees = Constants.clickWheelHighSensitivityThreshold;
-        break;
-    }
-    final double thresholdDegrees =
-        baseThresholdDegrees / clickWheelStep.multiplier;
+    final double thresholdDegrees = clickWheelSpeed.thresholdDegrees;
 
     return LayoutBuilder(
       builder: (context, constraints) {

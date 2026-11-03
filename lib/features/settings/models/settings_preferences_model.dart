@@ -1,9 +1,8 @@
 import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
-import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
-import 'package:retropod/features/settings/models/click_wheel_step.dart';
+import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
@@ -14,8 +13,7 @@ class SettingsPreferencesModel {
   final String languageLocaleCode;
   final DeviceColor deviceColor;
   final ClickWheelSize clickWheelSize;
-  final ClickWheelSensitivity clickWheelSensitivity;
-  final ClickWheelStep clickWheelStep;
+  final ClickWheelSpeed clickWheelSpeed;
   final ClickWheelAcceleration clickWheelAcceleration;
   final bool isTouchScreenEnabled;
   final RepeatMode repeatMode;
@@ -34,8 +32,7 @@ class SettingsPreferencesModel {
     required this.languageLocaleCode,
     required this.deviceColor,
     required this.clickWheelSize,
-    required this.clickWheelSensitivity,
-    required this.clickWheelStep,
+    required this.clickWheelSpeed,
     required this.clickWheelAcceleration,
     required this.isTouchScreenEnabled,
     required this.repeatMode,
@@ -55,8 +52,7 @@ class SettingsPreferencesModel {
     String? languageLocaleCode,
     DeviceColor? deviceColor,
     ClickWheelSize? clickWheelSize,
-    ClickWheelSensitivity? clickWheelSensitivity,
-    ClickWheelStep? clickWheelStep,
+    ClickWheelSpeed? clickWheelSpeed,
     ClickWheelAcceleration? clickWheelAcceleration,
     bool? isTouchScreenEnabled,
     RepeatMode? repeatMode,
@@ -75,9 +71,7 @@ class SettingsPreferencesModel {
       languageLocaleCode: languageLocaleCode ?? this.languageLocaleCode,
       deviceColor: deviceColor ?? this.deviceColor,
       clickWheelSize: clickWheelSize ?? this.clickWheelSize,
-      clickWheelSensitivity:
-          clickWheelSensitivity ?? this.clickWheelSensitivity,
-      clickWheelStep: clickWheelStep ?? this.clickWheelStep,
+      clickWheelSpeed: clickWheelSpeed ?? this.clickWheelSpeed,
       clickWheelAcceleration:
           clickWheelAcceleration ?? this.clickWheelAcceleration,
       isTouchScreenEnabled: isTouchScreenEnabled ?? this.isTouchScreenEnabled,
@@ -101,8 +95,7 @@ class SettingsPreferencesModel {
         other.languageLocaleCode == languageLocaleCode &&
         other.deviceColor == deviceColor &&
         other.clickWheelSize == clickWheelSize &&
-        other.clickWheelSensitivity == clickWheelSensitivity &&
-        other.clickWheelStep == clickWheelStep &&
+        other.clickWheelSpeed == clickWheelSpeed &&
         other.clickWheelAcceleration == clickWheelAcceleration &&
         other.isTouchScreenEnabled == isTouchScreenEnabled &&
         other.repeatMode == repeatMode &&
@@ -123,8 +116,7 @@ class SettingsPreferencesModel {
     languageLocaleCode,
     deviceColor,
     clickWheelSize,
-    clickWheelSensitivity,
-    clickWheelStep,
+    clickWheelSpeed,
     clickWheelAcceleration,
     isTouchScreenEnabled,
     repeatMode,

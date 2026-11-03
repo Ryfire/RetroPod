@@ -13,13 +13,6 @@ class Constants {
   static const String defaultNotificationAlbumArtImageUrl =
       "'https://files.radio.co/humorous-skink/staging/default-artwork.png'";
 
-  // Click Wheel Sensitivity Constants (degrees of rotation per scroll step)
-  static const double clickWheelVeryLowSensitivityThreshold = 90;
-  static const double clickWheelLowSensitivityThreshold = 60;
-  static const double clickWheelMediumSensitivityThreshold = 45;
-  static const double clickWheelMediumHighSensitivityThreshold = 36;
-  static const double clickWheelHighSensitivityThreshold = 22.5;
-
   // Click Wheel Acceleration Constants
   static const double clickWheelAccelerationMinVelocityDegreesPerSecond = 90;
   static const double clickWheelMaxAngularVelocityDegreesPerSecond = 1080;

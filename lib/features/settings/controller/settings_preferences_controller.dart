@@ -20,9 +20,8 @@ import 'package:retropod/features/music/playlist/models/playlist_model.dart';
 import 'package:retropod/features/notes/services/notes_service.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
-import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
-import 'package:retropod/features/settings/models/click_wheel_step.dart';
+import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
@@ -57,11 +56,8 @@ class SettingsPreferencesControllerNotifier
       clickWheelSize: ClickWheelSize.values.byName(
         settingsPreferencesRepository.getClickWheelSize(),
       ),
-      clickWheelSensitivity: ClickWheelSensitivity.fromName(
-        settingsPreferencesRepository.getClickWheelSensitivity(),
-      ),
-      clickWheelStep: ClickWheelStep.fromName(
-        settingsPreferencesRepository.getClickWheelStep(),
+      clickWheelSpeed: ClickWheelSpeed.fromName(
+        settingsPreferencesRepository.getClickWheelSpeed(),
       ),
       clickWheelAcceleration: ClickWheelAcceleration.fromName(
         settingsPreferencesRepository.getClickWheelAcceleration(),
@@ -218,69 +214,14 @@ class SettingsPreferencesControllerNotifier
     }
   }
 
-  Future<void> toggleClickWheelSensitivity() async {
-    switch (state.clickWheelSensitivity) {
-      case ClickWheelSensitivity.veryLow:
-        await ref
-            .read(settingsPreferencesRepositoryProvider)
-            .setClickWheelSensitivity(
-              clickWheelSensitivityName: ClickWheelSensitivity.low.name,
-            );
-        state = state.copyWith(
-          clickWheelSensitivity: ClickWheelSensitivity.low,
-        );
-        break;
-      case ClickWheelSensitivity.low:
-        await ref
-            .read(settingsPreferencesRepositoryProvider)
-            .setClickWheelSensitivity(
-              clickWheelSensitivityName: ClickWheelSensitivity.medium.name,
-            );
-        state = state.copyWith(
-          clickWheelSensitivity: ClickWheelSensitivity.medium,
-        );
-        break;
-      case ClickWheelSensitivity.medium:
-        await ref
-            .read(settingsPreferencesRepositoryProvider)
-            .setClickWheelSensitivity(
-              clickWheelSensitivityName: ClickWheelSensitivity.mediumHigh.name,
-            );
-        state = state.copyWith(
-          clickWheelSensitivity: ClickWheelSensitivity.mediumHigh,
-        );
-        break;
-      case ClickWheelSensitivity.mediumHigh:
-        await ref
-            .read(settingsPreferencesRepositoryProvider)
-            .setClickWheelSensitivity(
-              clickWheelSensitivityName: ClickWheelSensitivity.high.name,
-            );
-        state = state.copyWith(
-          clickWheelSensitivity: ClickWheelSensitivity.high,
-        );
-        break;
-      case ClickWheelSensitivity.high:
-        await ref
-            .read(settingsPreferencesRepositoryProvider)
-            .setClickWheelSensitivity(
-              clickWheelSensitivityName: ClickWheelSensitivity.veryLow.name,
-            );
-        state = state.copyWith(
-          clickWheelSensitivity: ClickWheelSensitivity.veryLow,
-        );
-        break;
-    }
-  }
-
-  Future<void> toggleClickWheelStep() async {
+  Future<void> toggleClickWheelSpeed() async {
     final int nextIndex =
-        (state.clickWheelStep.index + 1) % ClickWheelStep.values.length;
-    final ClickWheelStep nextStep = ClickWheelStep.values[nextIndex];
+        (state.clickWheelSpeed.index + 1) % ClickWheelSpeed.values.length;
+    final ClickWheelSpeed nextSpeed = ClickWheelSpeed.values[nextIndex];
     await ref
         .read(settingsPreferencesRepositoryProvider)
-        .setClickWheelStep(clickWheelStepName: nextStep.name);
-    state = state.copyWith(clickWheelStep: nextStep);
+        .setClickWheelSpeed(clickWheelSpeedName: nextSpeed.name);
+    state = state.copyWith(clickWheelSpeed: nextSpeed);
   }
 
   Future<void> toggleClickWheelAcceleration() async {

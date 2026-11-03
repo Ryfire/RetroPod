@@ -26,8 +26,7 @@ enum _SettingsDisplayItems {
   noteFontColor,
   noteFontSize,
   clickWheelSize,
-  clickWheelSensitivity,
-  clickWheelStep,
+  clickWheelSpeed,
   clickWheelAcceleration,
   isTouchScreenEnabled,
   vibrate,
@@ -64,10 +63,8 @@ enum _SettingsDisplayItems {
         return context.localization.noteFontSizeSettingTitle;
       case clickWheelSize:
         return context.localization.clickWheelSizeSettingTitle;
-      case clickWheelSensitivity:
-        return context.localization.clickWheelSensitivitySettingTitle;
-      case clickWheelStep:
-        return context.localization.clickWheelStepSettingTitle;
+      case clickWheelSpeed:
+        return context.localization.clickWheelSpeedSettingTitle;
       case clickWheelAcceleration:
         return context.localization.clickWheelAccelerationSettingTitle;
       case volumeMode:
@@ -150,15 +147,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             .read(settingsPreferencesControllerProvider.notifier)
             .toggleClickWheelSize();
         break;
-      case _SettingsDisplayItems.clickWheelSensitivity:
+      case _SettingsDisplayItems.clickWheelSpeed:
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
-            .toggleClickWheelSensitivity();
-        break;
-      case _SettingsDisplayItems.clickWheelStep:
-        await ref
-            .read(settingsPreferencesControllerProvider.notifier)
-            .toggleClickWheelStep();
+            .toggleClickWheelSpeed();
         break;
       case _SettingsDisplayItems.clickWheelAcceleration:
         await ref
@@ -253,10 +245,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return '${settingsState.noteFontSize}';
       case _SettingsDisplayItems.clickWheelSize:
         return settingsState.clickWheelSize.title(context);
-      case _SettingsDisplayItems.clickWheelSensitivity:
-        return settingsState.clickWheelSensitivity.title(context);
-      case _SettingsDisplayItems.clickWheelStep:
-        return settingsState.clickWheelStep.title(context);
+      case _SettingsDisplayItems.clickWheelSpeed:
+        return settingsState.clickWheelSpeed.title(context);
       case _SettingsDisplayItems.clickWheelAcceleration:
         return settingsState.clickWheelAcceleration.title(context);
       case _SettingsDisplayItems.appTheme:
@@ -310,13 +300,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
             SplitScreenType.clickWheelSize;
         break;
-      case _SettingsDisplayItems.clickWheelSensitivity:
+      case _SettingsDisplayItems.clickWheelSpeed:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
-            SplitScreenType.clickWheelSensitivity;
+            SplitScreenType.clickWheelSpeed;
         break;
-      case _SettingsDisplayItems.clickWheelStep:
+      case _SettingsDisplayItems.clickWheelAcceleration:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
-            SplitScreenType.clickWheelStep;
+            SplitScreenType.clickWheelAcceleration;
         break;
       case _SettingsDisplayItems.isTouchScreenEnabled:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =

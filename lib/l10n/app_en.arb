@@ -500,13 +500,9 @@
   "@clickWheelSizeSettingTitle": {
     "description": "The title of the click wheel size setting"
   },
-  "clickWheelSensitivitySettingTitle": "Click Wheel Sensitivity",
-  "@clickWheelSensitivitySettingTitle": {
-    "description": "The title of the click wheel sensitivity setting"
-  },
-  "clickWheelStepSettingTitle": "Click Wheel Step",
-  "@clickWheelStepSettingTitle": {
-    "description": "The title of the click wheel step setting"
+  "clickWheelSpeedSettingTitle": "Click Wheel Speed",
+  "@clickWheelSpeedSettingTitle": {
+    "description": "The title of the click wheel speed setting"
   },
   "clickWheelAccelerationSettingTitle": "Click Wheel Tracking",
   "@clickWheelAccelerationSettingTitle": {
@@ -547,6 +543,10 @@
   "coarse": "Coarse",
   "@coarse": {
     "description": "The text for coarse click wheel step"
+  },
+  "veryCoarse": "Very Coarse",
+  "@veryCoarse": {
+    "description": "The text for very coarse click wheel speed"
   },
   "normal": "Normal",
   "@normal": {

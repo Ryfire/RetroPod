@@ -143,17 +143,17 @@ class _SplitScreenPlaceholderState extends ConsumerState<SplitScreenPlaceholder>
           icon: CupertinoIcons.smallcircle_fill_circle_fill,
           contentText: currentSettings.clickWheelSize.title(context),
         );
-      } else if (splitScreenType == SplitScreenType.clickWheelSensitivity) {
+      } else if (splitScreenType == SplitScreenType.clickWheelSpeed) {
         splitScreenWidget = IconPreviewWidget(
-          titleText: context.localization.clickWheelSensitivitySettingTitle,
-          icon: CupertinoIcons.memories_badge_plus,
-          contentText: currentSettings.clickWheelSensitivity.title(context),
-        );
-      } else if (splitScreenType == SplitScreenType.clickWheelStep) {
-        splitScreenWidget = IconPreviewWidget(
-          titleText: context.localization.clickWheelStepSettingTitle,
+          titleText: context.localization.clickWheelSpeedSettingTitle,
           icon: CupertinoIcons.gauge,
-          contentText: currentSettings.clickWheelStep.title(context),
+          contentText: currentSettings.clickWheelSpeed.title(context),
+        );
+      } else if (splitScreenType == SplitScreenType.clickWheelAcceleration) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.clickWheelAccelerationSettingTitle,
+          icon: CupertinoIcons.speedometer,
+          contentText: currentSettings.clickWheelAcceleration.title(context),
         );
       } else if (splitScreenType == SplitScreenType.touchScreen) {
         splitScreenWidget = IconPreviewWidget(

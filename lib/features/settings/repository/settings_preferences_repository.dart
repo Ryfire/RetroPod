@@ -5,9 +5,8 @@ import 'package:retropod/core/providers/shared_preferences_with_cache_provider.d
 import 'package:retropod/core/utils/rating_snapshot.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
-import 'package:retropod/features/settings/models/click_wheel_sensitivity.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
-import 'package:retropod/features/settings/models/click_wheel_step.dart';
+import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
@@ -48,18 +47,24 @@ class SettingsPreferencesRepository {
         ClickWheelSize.medium.name;
   }
 
-  String getClickWheelSensitivity() {
-    return _sharedPreferencesWithCache.getString(
-          SharedPreferencesKeys.clickWheelSensitivity.name,
-        ) ??
-        ClickWheelSensitivity.medium.name;
-  }
-
-  String getClickWheelStep() {
-    return _sharedPreferencesWithCache.getString(
-          SharedPreferencesKeys.clickWheelStep.name,
-        ) ??
-        ClickWheelStep.normal.name;
+  String getClickWheelSpeed() {
+    final String? storedSpeedName = _sharedPreferencesWithCache.getString(
+      SharedPreferencesKeys.clickWheelSpeed.name,
+    );
+    if (storedSpeedName != null) {
+      return ClickWheelSpeed.fromName(storedSpeedName).name;
+    }
+    // One-time migration from the retired sensitivity and step settings:
+    // their combined effect is preserved as the nearest speed value. The
+    // legacy keys stay readable until every installation has migrated.
+    return ClickWheelSpeed.fromLegacyNames(
+      sensitivityName: _sharedPreferencesWithCache.getString(
+        SharedPreferencesKeys.clickWheelSensitivity.name,
+      ),
+      stepName: _sharedPreferencesWithCache.getString(
+        SharedPreferencesKeys.clickWheelStep.name,
+      ),
+    ).name;
   }
 
   String getClickWheelAcceleration() {
@@ -172,19 +177,10 @@ class SettingsPreferencesRepository {
     );
   }
 
-  Future<void> setClickWheelSensitivity({
-    required String clickWheelSensitivityName,
-  }) async {
+  Future<void> setClickWheelSpeed({required String clickWheelSpeedName}) async {
     return _sharedPreferencesWithCache.setString(
-      SharedPreferencesKeys.clickWheelSensitivity.name,
-      clickWheelSensitivityName,
-    );
-  }
-
-  Future<void> setClickWheelStep({required String clickWheelStepName}) async {
-    return _sharedPreferencesWithCache.setString(
-      SharedPreferencesKeys.clickWheelStep.name,
-      clickWheelStepName,
+      SharedPreferencesKeys.clickWheelSpeed.name,
+      clickWheelSpeedName,
     );
   }
 
