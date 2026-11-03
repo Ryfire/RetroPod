@@ -13,6 +13,7 @@ import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/providers/device_directory_provider.dart';
 import 'package:retropod/core/repositories/metadata_reader_repository.dart';
 import 'package:retropod/core/utils/directory_exclusion.dart';
+import 'package:retropod/core/utils/library_cache_prune.dart';
 import 'package:retropod/core/utils/rating_snapshot.dart';
 import 'package:retropod/features/settings/controller/exclude_directories_controller.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
@@ -77,96 +78,90 @@ class AudioFilesServiceNotifier
 
   Future<UnmodifiableListView<MusicMetadata>> getAudioFilesMetadata() async {
     state = const AsyncLoading();
-    try {
-      if (ref.read(settingsPreferencesControllerProvider).fetchOnlineMusic) {
-        return UnmodifiableListView(onlineDemoAudioFilesMetaData);
-      }
-      // Fetch metadata from local files
-      else {
-        final Box<MusicMetadata> metadataBox = Hive.box<MusicMetadata>(
-          Constants.metadataBoxName,
-        );
-        // Check if the metadata box is empty
-        if (metadataBox.isEmpty) {
-          if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-            final newDirectory = await FilePicker.getDirectoryPath(
-              dialogTitle: "Select Music Directory",
-              lockParentWindow: true,
-              initialDirectory: ref
-                  .read(deviceDirectoryProvider)
-                  .requireValue
-                  .musicFolderPath,
-            );
-            if (newDirectory != null) {
-              final (
-                Set<String> excludedDirectoryPaths,
-                List<String> nameFilters,
-              ) = _currentExclusionState();
-              final result = await compute(
-                ref
-                    .read(metadataReaderRepositoryProvider)
-                    .extractMetadataFromDirectory,
-                (
-                  directoryPath: newDirectory,
-                  excludedDirectoryPaths: excludedDirectoryPaths,
-                  nameFilters: nameFilters,
-                ),
-              );
-              final restoredResult = await _restoreSavedRatings(result);
-              await metadataBox.addAll(restoredResult);
-              return UnmodifiableListView(restoredResult);
-            } else {
-              return UnmodifiableListView([]);
-            }
-          } else if (Platform.isIOS) {
-            final pickedFiles = await FilePicker.pickFiles(
-              allowMultiple: true,
-              dialogTitle: "Pick Song Files",
-            );
-
-            if (pickedFiles == null || pickedFiles.files.isEmpty) {
-              return UnmodifiableListView([]);
-            }
-
+    if (ref.read(settingsPreferencesControllerProvider).fetchOnlineMusic) {
+      return UnmodifiableListView(onlineDemoAudioFilesMetaData);
+    }
+    // Fetch metadata from local files. Errors are intentionally allowed to
+    // propagate so the provider reports a real failure state instead of
+    // disguising a broken library as an empty one.
+    {
+      final Box<MusicMetadata> metadataBox = Hive.box<MusicMetadata>(
+        Constants.metadataBoxName,
+      );
+      // Check if the metadata box is empty
+      if (metadataBox.isEmpty) {
+        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+          final newDirectory = await FilePicker.getDirectoryPath(
+            dialogTitle: "Select Music Directory",
+            lockParentWindow: true,
+            initialDirectory: ref
+                .read(deviceDirectoryProvider)
+                .requireValue
+                .musicFolderPath,
+          );
+          if (newDirectory != null) {
+            final (
+              Set<String> excludedDirectoryPaths,
+              List<String> nameFilters,
+            ) = _currentExclusionState();
             final result = await compute(
               ref
                   .read(metadataReaderRepositoryProvider)
-                  .extractMetadataFromFiles,
-              pickedFiles.files.map((f) => f.path!).toList(),
-            );
-
-            final restoredResult = await _restoreSavedRatings(result);
-            await metadataBox.addAll(restoredResult);
-            return UnmodifiableListView(restoredResult);
-          }
-          // On Android Automatically Fetch Music Files
-          else {
-            final List<String> filePaths = await _queryMediaStorePaths();
-            await _syncExcludeRows(filePaths);
-            final result = await compute(
-              ref
-                  .read(metadataReaderRepositoryProvider)
-                  .extractMetadataFromFiles,
-              _filterExcludedPaths(filePaths),
+                  .extractMetadataFromDirectory,
+              (
+                directoryPath: newDirectory,
+                excludedDirectoryPaths: excludedDirectoryPaths,
+                nameFilters: nameFilters,
+              ),
             );
             final restoredResult = await _restoreSavedRatings(result);
             await metadataBox.addAll(restoredResult);
             return UnmodifiableListView(restoredResult);
+          } else {
+            return UnmodifiableListView([]);
           }
+        } else if (Platform.isIOS) {
+          final pickedFiles = await FilePicker.pickFiles(
+            allowMultiple: true,
+            dialogTitle: "Pick Song Files",
+          );
+
+          if (pickedFiles == null || pickedFiles.files.isEmpty) {
+            return UnmodifiableListView([]);
+          }
+
+          final result = await compute(
+            ref.read(metadataReaderRepositoryProvider).extractMetadataFromFiles,
+            pickedFiles.files.map((f) => f.path!).toList(),
+          );
+
+          final restoredResult = await _restoreSavedRatings(result);
+          await metadataBox.addAll(restoredResult);
+          return UnmodifiableListView(restoredResult);
         }
-        // Return cached metadata
+        // On Android Automatically Fetch Music Files
         else {
-          // Hand the cached library back immediately and merge newly added
-          // files in the background so startup never waits on a media store
-          // query.
-          final UnmodifiableListView<MusicMetadata> cachedMetadata =
-              UnmodifiableListView(metadataBox.values);
-          _scheduleMissingFilesRefresh();
-          return cachedMetadata;
+          final List<String> filePaths = await _queryMediaStorePaths();
+          await _syncExcludeRows(filePaths);
+          final result = await compute(
+            ref.read(metadataReaderRepositoryProvider).extractMetadataFromFiles,
+            _filterExcludedPaths(filePaths),
+          );
+          final restoredResult = await _restoreSavedRatings(result);
+          await metadataBox.addAll(restoredResult);
+          return UnmodifiableListView(restoredResult);
         }
       }
-    } catch (e) {
-      return UnmodifiableListView([]);
+      // Return cached metadata
+      else {
+        // Hand the cached library back immediately and merge newly added
+        // files in the background so startup never waits on a media store
+        // query.
+        final UnmodifiableListView<MusicMetadata> cachedMetadata =
+            UnmodifiableListView(metadataBox.values);
+        _scheduleMissingFilesRefresh();
+        return cachedMetadata;
+      }
     }
   }
 
@@ -223,9 +218,22 @@ class AudioFilesServiceNotifier
     );
   }
 
+  /// Runs the incremental library sync when the app returns to the
+  /// foreground so files added or removed while it was backgrounded are
+  /// reflected without waiting for the next cold start.
+  Future<void> refreshOnAppResume() async {
+    // Skip before the first startup sync completed; the initial scan will
+    // pick everything up.
+    if (state.value == null) {
+      return;
+    }
+    await refreshMissingFiles();
+  }
+
   /// Parses audio files that are not cached yet and are not excluded,
-  /// merging them into the metadata cache. Android only: relies on the
-  /// media store to enumerate candidate files.
+  /// merging them into the metadata cache, and prunes cached entries whose
+  /// files no longer exist. Android only: relies on the media store to
+  /// enumerate candidate files.
   Future<void> refreshMissingFiles() async {
     if (_isMissingFilesRefreshInProgress) {
       return;
@@ -242,28 +250,54 @@ class AudioFilesServiceNotifier
       );
       final List<String> filePaths = await _queryMediaStorePaths();
       await _syncExcludeRows(filePaths);
-      final Set<String> cachedFilePaths = metadataBox.values
-          .map((musicMetadata) => musicMetadata.filePath)
-          .whereType<String>()
+      final Set<String> existingFilePaths = filePaths.toSet();
+      final Map<int, String> filePathsByCacheKey = {
+        for (final key in metadataBox.keys)
+          if (metadataBox.get(key)?.filePath case final String filePath)
+            key: filePath,
+      };
+      final Set<int> staleKeys = staleCacheKeys(
+        filePathsByCacheKey: filePathsByCacheKey,
+        existingFilePaths: existingFilePaths,
+      );
+      if (staleKeys.isNotEmpty) {
+        await metadataBox.deleteAll(staleKeys);
+      }
+      final Set<String> cachedFilePaths = filePathsByCacheKey.keys
+          .where((key) => !staleKeys.contains(key))
+          .map((key) => filePathsByCacheKey[key]!)
           .toSet();
-      final List<String> missingPaths = _filterExcludedPaths(
-        filePaths,
-      ).where((path) => !cachedFilePaths.contains(path)).toList(
-            growable: false,
-          );
-      if (missingPaths.isEmpty) {
+      final List<String> missingPaths = _filterExcludedPaths(filePaths)
+          .where((path) => !cachedFilePaths.contains(path))
+          .toList(growable: false);
+      if (staleKeys.isEmpty && missingPaths.isEmpty) {
         return;
       }
-      final List<MusicMetadata> result = await compute(
-        ref.read(metadataReaderRepositoryProvider).extractMetadataFromFiles,
-        missingPaths,
+      final List<MusicMetadata> result = missingPaths.isEmpty
+          ? const <MusicMetadata>[]
+          : await compute(
+              ref
+                  .read(metadataReaderRepositoryProvider)
+                  .extractMetadataFromFiles,
+              missingPaths,
+            );
+      if (result.isNotEmpty) {
+        final int startIndex = metadataBox.length;
+        await metadataBox.addAll([
+          for (final (int index, MusicMetadata metadata) in result.indexed)
+            metadata.copyWith(originalSongIndex: startIndex + index),
+        ]);
+      }
+      // Renumber the surviving entries so pruned rows leave no gaps in the
+      // playlist indexes.
+      final Map<int, MusicMetadata> metadataByCacheKey = {
+        for (final key in metadataBox.keys)
+          if (metadataBox.get(key) case final MusicMetadata metadata)
+            key: metadata,
+      };
+      await metadataBox.putAll(
+        reindexedLibrary(metadataByCacheKey: metadataByCacheKey),
       );
-      final int startIndex = metadataBox.length;
-      final List<MusicMetadata> adjustedResult = [
-        for (final (int index, MusicMetadata metadata) in result.indexed)
-          metadata.copyWith(originalSongIndex: startIndex + index),
-      ];
-      await metadataBox.addAll(adjustedResult);
       try {
         state = AsyncData(UnmodifiableListView(metadataBox.values));
       } catch (e) {
