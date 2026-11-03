@@ -63,10 +63,10 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
   @override
   String get routeName => Routes.noteViewer.name;
 
-  /// Requires three wheel steps per page turn so scanning a note feels less
+  /// Requires four wheel steps per page turn so scanning a note feels less
   /// jumpy; the queued page turns still drain smoothly when spinning fast.
   @override
-  int get wheelStepsPerPageTurn => 3;
+  int get wheelStepsPerPageTurn => 4;
 
   @override
   List<String> get displayItems => _pages;
