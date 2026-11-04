@@ -28,8 +28,7 @@ class AppColorsScope extends InheritedWidget {
   });
 
   static AppColorsScope? maybeOf(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<AppColorsScope>();
+    return context.dependOnInheritedWidgetOfExactType<AppColorsScope>();
   }
 
   @override

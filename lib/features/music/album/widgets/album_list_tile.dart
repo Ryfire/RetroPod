@@ -45,20 +45,17 @@ class AlbumListTile extends StatelessWidget {
           decoration: BoxDecoration(
             border: tileBorder,
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
           ),
           child: Row(
             children: [
               if (isAllSongsAlbum)
-                const SizedBox(
+                SizedBox(
                   height: 54,
                   width: 54,
                   child: ColoredBox(
@@ -67,7 +64,7 @@ class AlbumListTile extends StatelessWidget {
                       child: Icon(
                         CupertinoIcons.music_note_2,
                         size: 40,
-                        color: AppPalette.selectedTileGradientColor2,
+                        color: context.appHighlightColor,
                       ),
                     ),
                   ),
@@ -99,7 +96,7 @@ class AlbumListTile extends StatelessWidget {
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: isSelected
-                                ? context.appInverseTextColor
+                                ? context.appHighlightTextColor
                                 : context.appPrimaryTextColor,
                           ),
                       maxLines: 1,
@@ -114,7 +111,7 @@ class AlbumListTile extends StatelessWidget {
                       style: CupertinoTheme.of(context).textTheme.textStyle
                           .copyWith(
                             color: isSelected
-                                ? context.appInverseTextColor
+                                ? context.appHighlightTextColor
                                 : context.appSecondaryTextColor,
                           ),
                       maxLines: 1,
@@ -125,7 +122,7 @@ class AlbumListTile extends StatelessWidget {
               if (isSelected)
                 Icon(
                   CupertinoIcons.right_chevron,
-                  color: context.appInverseTextColor,
+                  color: context.appHighlightTextColor,
                 ),
             ],
           ),

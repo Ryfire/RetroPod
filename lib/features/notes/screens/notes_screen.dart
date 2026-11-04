@@ -166,9 +166,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
       onTap: () => unawaited(context.pushNamed(Routes.notesSearch.name)),
       child: Container(
         height: displayTileHeight,
-        color: isSelected
-            ? context.appHighlightColor
-            : context.appSurfaceColor,
+        color: isSelected ? context.appHighlightColor : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
@@ -200,9 +198,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
       onTap: () => unawaited(context.pushNamed(Routes.notesBookmarks.name)),
       child: Container(
         height: displayTileHeight,
-        color: isSelected
-            ? context.appHighlightColor
-            : context.appSurfaceColor,
+        color: isSelected ? context.appHighlightColor : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
@@ -234,9 +230,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen>
       onTap: () => unawaited(ref.read(notesServiceProvider.notifier).rescan()),
       child: Container(
         height: displayTileHeight,
-        color: isSelected
-            ? context.appHighlightColor
-            : context.appSurfaceColor,
+        color: isSelected ? context.appHighlightColor : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [

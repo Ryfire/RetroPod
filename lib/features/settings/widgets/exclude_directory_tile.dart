@@ -30,7 +30,7 @@ class ExcludeDirectoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isExcludedByNameFilter = _isExcludedByNameFilter;
     final Color textColor = isSelected
-        ? context.appInverseTextColor
+        ? context.appHighlightTextColor
         : isExcludedByNameFilter
         ? context.appSecondaryTextColor
         : context.appPrimaryTextColor;
@@ -59,23 +59,18 @@ class ExcludeDirectoryTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: isSelected
-                ? const Border(
-                    top: BorderSide(
-                      color: AppPalette.selectedTileTopBorderColor,
-                    ),
+                ? Border(
+                    top: BorderSide(color: context.appHighlightGradient.first),
                     bottom: BorderSide(
-                      color: AppPalette.selectedTileBottomBorderColor,
+                      color: context.appHighlightGradient.last,
                     ),
                   )
                 : null,
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
           ),

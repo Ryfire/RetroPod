@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/widgets/marquee_text.dart';
 import 'package:retropod/features/now_playing/models/now_playing_model.dart';
@@ -78,12 +77,16 @@ class NowPlayingWidget extends StatelessWidget {
                   Row(
                     children: List.generate(
                       nowPlayingDetails.currentMetadata?.rating ?? 0,
-                      (index) => const Padding(
-                        padding: EdgeInsets.only(right: 2, top: 4, bottom: 4),
+                      (index) => Padding(
+                        padding: const EdgeInsets.only(
+                          right: 2,
+                          top: 4,
+                          bottom: 4,
+                        ),
                         child: Icon(
                           CupertinoIcons.star_fill,
                           size: 14,
-                          color: AppPalette.selectedTileGradientColor2,
+                          color: context.appHighlightColor,
                         ),
                       ),
                     ),

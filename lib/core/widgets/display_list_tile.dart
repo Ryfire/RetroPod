@@ -27,9 +27,7 @@ class DisplayListTile extends StatelessWidget {
           decoration: BoxDecoration(
             border: isSelected
                 ? Border(
-                    top: BorderSide(
-                      color: context.appHighlightGradient.first,
-                    ),
+                    top: BorderSide(color: context.appHighlightGradient.first),
                     bottom: BorderSide(
                       color: context.appHighlightGradient.last,
                     ),

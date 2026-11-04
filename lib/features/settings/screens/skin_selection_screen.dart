@@ -99,23 +99,18 @@ class _SkinOptionTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: isSelected
-                ? const Border(
-                    top: BorderSide(
-                      color: AppPalette.selectedTileTopBorderColor,
-                    ),
+                ? Border(
+                    top: BorderSide(color: context.appHighlightGradient.first),
                     bottom: BorderSide(
-                      color: AppPalette.selectedTileBottomBorderColor,
+                      color: context.appHighlightGradient.last,
                     ),
                   )
                 : null,
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
           ),
@@ -133,7 +128,7 @@ class _SkinOptionTile extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: isSelected
-                          ? CupertinoColors.white
+                          ? context.appHighlightTextColor
                           : context.appPrimaryTextColor,
                     ),
                     maxLines: 1,
@@ -148,9 +143,9 @@ class _SkinOptionTile extends StatelessWidget {
                         : context.appPrimaryTextColor,
                   ),
                 if (isSelected)
-                  const Icon(
+                  Icon(
                     CupertinoIcons.right_chevron,
-                    color: CupertinoColors.white,
+                    color: context.appHighlightTextColor,
                   ),
               ],
             ),

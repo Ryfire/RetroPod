@@ -96,7 +96,8 @@ class SettingsPreferencesModel {
       deviceSkin: deviceSkin ?? this.deviceSkin,
       noteFontColor: noteFontColor ?? this.noteFontColor,
       noteFontSize: noteFontSize ?? this.noteFontSize,
-      screenBackgroundColor: screenBackgroundColor ?? this.screenBackgroundColor,
+      screenBackgroundColor:
+          screenBackgroundColor ?? this.screenBackgroundColor,
       fontColor: fontColor ?? this.fontColor,
       highlightColor: highlightColor ?? this.highlightColor,
     );

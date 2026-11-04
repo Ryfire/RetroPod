@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/constants/assets.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/models/music_metadata.dart';
@@ -33,13 +32,10 @@ class AlbumArtSongListTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
           ),
@@ -72,7 +68,7 @@ class AlbumArtSongListTile extends StatelessWidget {
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: isSelected
-                                ? context.appInverseTextColor
+                                ? context.appHighlightTextColor
                                 : context.appPrimaryTextColor,
                           ),
                       maxLines: 1,
@@ -84,7 +80,7 @@ class AlbumArtSongListTile extends StatelessWidget {
                       style: CupertinoTheme.of(context).textTheme.textStyle
                           .copyWith(
                             color: isSelected
-                                ? context.appInverseTextColor
+                                ? context.appHighlightTextColor
                                 : context.appSecondaryTextColor,
                           ),
                       maxLines: 1,
@@ -97,7 +93,7 @@ class AlbumArtSongListTile extends StatelessWidget {
                   isCurrentlyPlaying
                       ? CupertinoIcons.volume_up
                       : CupertinoIcons.right_chevron,
-                  color: CupertinoColors.white,
+                  color: context.appHighlightTextColor,
                 ),
               if (!isSelected && isCurrentlyPlaying)
                 Icon(

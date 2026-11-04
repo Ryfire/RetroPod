@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 
@@ -171,14 +170,16 @@ class _InputTextBarState extends State<InputTextBar> {
                           height: Constants.inputTextAlphabetSize,
                           child: ColoredBox(
                             color: (_currentSelectedIndex == index)
-                                ? AppPalette.selectedTileGradientColor1
+                                ? context.appHighlightColor
                                 : CupertinoColors.black,
                             child: Center(
                               child: Text(
                                 alphabets[index],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: Constants.inputTextAlphabetSize,
-                                  color: CupertinoColors.white,
+                                  color: _currentSelectedIndex == index
+                                      ? context.appHighlightTextColor
+                                      : CupertinoColors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

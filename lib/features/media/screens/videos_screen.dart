@@ -154,9 +154,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
                               },
                               child: Container(
                                 color: isSelected
-                                    ? CupertinoColors.systemBlue
-                                    : CupertinoColors.systemBackground
-                                          .resolveFrom(context),
+                                    ? context.appHighlightColor
+                                    : context.appSurfaceColor,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 6,
@@ -171,18 +170,19 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: isSelected
-                                              ? CupertinoColors.white
-                                              : CupertinoColors.label
-                                                    .resolveFrom(context),
+                                              ? context.appHighlightTextColor
+                                              : context.appPrimaryTextColor,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const Icon(
+                                    Icon(
                                       CupertinoIcons.chevron_right,
                                       size: 12,
-                                      color: CupertinoColors.systemGrey,
+                                      color: isSelected
+                                          ? context.appHighlightTextColor
+                                          : CupertinoColors.systemGrey,
                                     ),
                                   ],
                                 ),
@@ -240,17 +240,26 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
       onTap: _addFolder,
       child: Container(
         height: 30,
-        color: isSelected
-            ? CupertinoColors.systemBlue
-            : CupertinoColors.systemGroupedBackground.resolveFrom(context),
+        color: isSelected ? context.appHighlightColor : context.appSurfaceColor,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            const Icon(CupertinoIcons.add, size: 14),
+            Icon(
+              CupertinoIcons.add,
+              size: 14,
+              color: isSelected
+                  ? context.appHighlightTextColor
+                  : context.appPrimaryTextColor,
+            ),
             const SizedBox(width: 6),
             Text(
               context.localization.addFolderButton,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected
+                    ? context.appHighlightTextColor
+                    : context.appPrimaryTextColor,
+              ),
             ),
           ],
         ),

@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 
 class RatingBar extends StatelessWidget {
@@ -23,10 +22,10 @@ class RatingBar extends StatelessWidget {
           child: GestureDetector(
             onTap: () => onRatingClicked(index + 1),
             child: (currentRating > index)
-                ? const Icon(
+                ? Icon(
                     CupertinoIcons.star_fill,
                     size: 24,
-                    color: AppPalette.selectedTileGradientColor2,
+                    color: context.appHighlightColor,
                   )
                 : SizedBox(
                     height: 24,

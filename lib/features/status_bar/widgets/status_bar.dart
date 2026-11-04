@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/constants/app_palette.dart';
+import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/features/now_playing/provider/now_playing_details_provider.dart';
 import 'package:retropod/features/status_bar/widgets/battery_indicator.dart';
 
@@ -62,7 +63,7 @@ class StatusBar extends StatelessWidget {
                     isPlaying
                         ? CupertinoIcons.play_fill
                         : CupertinoIcons.pause_fill,
-                    color: AppPalette.selectedTileGradientColor1,
+                    color: context.appHighlightColor,
                   );
                 },
               ),

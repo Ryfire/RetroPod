@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:retropod/core/constants/app_palette.dart';
+import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
@@ -67,14 +67,11 @@ class _CoverFlowAlbumSelectionScreenState
                   height: 50,
                   width: double.infinity,
                   child: DecoratedBox(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          AppPalette.selectedTileGradientColor1,
-                          AppPalette.selectedTileGradientColor2,
-                        ],
+                        colors: context.appHighlightGradient,
                       ),
                     ),
                     child: Padding(
@@ -85,18 +82,18 @@ class _CoverFlowAlbumSelectionScreenState
                         children: [
                           Text(
                             widget.albumDetail.albumName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: CupertinoColors.white,
+                              color: context.appHighlightTextColor,
                             ),
                             maxLines: 1,
                           ),
                           Text(
                             widget.albumDetail.albumArtistName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: CupertinoColors.white,
+                              color: context.appHighlightTextColor,
                             ),
                             maxLines: 1,
                           ),

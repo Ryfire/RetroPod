@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/widgets/marquee_text.dart';
 
@@ -29,23 +28,18 @@ class NameFilterTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: isSelected
-                ? const Border(
-                    top: BorderSide(
-                      color: AppPalette.selectedTileTopBorderColor,
-                    ),
+                ? Border(
+                    top: BorderSide(color: context.appHighlightGradient.first),
                     bottom: BorderSide(
-                      color: AppPalette.selectedTileBottomBorderColor,
+                      color: context.appHighlightGradient.last,
                     ),
                   )
                 : null,
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
           ),
@@ -66,7 +60,7 @@ class NameFilterTile extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: isSelected
-                              ? context.appInverseTextColor
+                              ? context.appHighlightTextColor
                               : context.appPrimaryTextColor,
                           overflow: TextOverflow.ellipsis,
                         ),

@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:retropod/core/constants/app_palette.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/extensions/duration_extensions.dart';
 import 'package:retropod/core/widgets/marquee_text.dart';
@@ -30,13 +29,10 @@ class CoverFlowAlbumSongListTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
           ),
@@ -54,7 +50,7 @@ class CoverFlowAlbumSongListTile extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: isSelected
-                              ? context.appInverseTextColor
+                              ? context.appHighlightTextColor
                               : context.appPrimaryTextColor,
                         ),
                   ),
@@ -65,7 +61,7 @@ class CoverFlowAlbumSongListTile extends StatelessWidget {
                           CupertinoIcons.volume_up,
                           size: 16,
                           color: isSelected
-                              ? context.appInverseTextColor
+                              ? context.appHighlightTextColor
                               : context.appPrimaryTextColor,
                         )
                       : Text(
@@ -75,7 +71,7 @@ class CoverFlowAlbumSongListTile extends StatelessWidget {
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: isSelected
-                                    ? context.appInverseTextColor
+                                    ? context.appHighlightTextColor
                                     : context.appPrimaryTextColor,
                               ),
                           maxLines: 1,

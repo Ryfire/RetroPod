@@ -34,13 +34,10 @@ class PlaylistListTile extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: isSelected
-                ? const LinearGradient(
+                ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppPalette.selectedTileGradientColor1,
-                      AppPalette.selectedTileGradientColor2,
-                    ],
+                    colors: context.appHighlightGradient,
                   )
                 : null,
             border: tileBorder,
@@ -61,7 +58,7 @@ class PlaylistListTile extends StatelessWidget {
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: isSelected
-                                  ? context.appInverseTextColor
+                                  ? context.appHighlightTextColor
                                   : context.appPrimaryTextColor,
                             ),
                         maxLines: 1,
@@ -71,7 +68,7 @@ class PlaylistListTile extends StatelessWidget {
                         style: CupertinoTheme.of(context).textTheme.textStyle
                             .copyWith(
                               color: isSelected
-                                  ? context.appInverseTextColor
+                                  ? context.appHighlightTextColor
                                   : context.appSecondaryTextColor,
                             ),
                         maxLines: 1,
@@ -83,7 +80,7 @@ class PlaylistListTile extends StatelessWidget {
                   Icon(
                     CupertinoIcons.chevron_right,
                     size: 18,
-                    color: context.appInverseTextColor,
+                    color: context.appHighlightTextColor,
                   ),
               ],
             ),

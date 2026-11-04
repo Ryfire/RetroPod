@@ -757,15 +757,15 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
               child: Container(
                 height: 24,
                 alignment: Alignment.center,
-                color: CupertinoColors.systemBlue,
+                color: context.appHighlightColor,
                 child: Text(
                   context.localization.noteBookmarkIndicator(
                     _bookmarkIndicatorPage,
                     _bookmarkIndicatorTotal,
                   ),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: CupertinoColors.white,
+                    color: context.appHighlightTextColor,
                   ),
                 ),
               ),
@@ -778,14 +778,14 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
               child: Container(
                 height: 24,
                 alignment: Alignment.center,
-                color: CupertinoColors.systemBlue,
+                color: context.appHighlightColor,
                 child: Text(
                   context.localization.noteFontIndicator(
                     '${_fontSize.round()}',
                   ),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: CupertinoColors.white,
+                    color: context.appHighlightTextColor,
                   ),
                 ),
               ),
