@@ -21,6 +21,7 @@ import 'package:retropod/features/settings/models/click_wheel_acceleration.dart'
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
 import 'package:retropod/features/settings/models/click_wheel_speed.dart';
+import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
@@ -71,6 +72,9 @@ class SettingsPreferencesControllerNotifier
       clickWheelSound: settingsPreferencesRepository.getClickWheelSound(),
       clickWheelSoundChoice: ClickWheelSoundChoice.fromName(
         settingsPreferencesRepository.getClickWheelSoundChoice(),
+      ),
+      clickWheelVolumeLevel: ClickWheelVolumeLevel.fromName(
+        settingsPreferencesRepository.getClickWheelVolumeLevel(),
       ),
       volumeMode: VolumeMode.values.byName(
         settingsPreferencesRepository.getVolumeMode(),
@@ -363,6 +367,18 @@ class SettingsPreferencesControllerNotifier
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setClickWheelSoundChoice(clickWheelSoundChoiceName: nextChoice.name);
+  }
+
+  Future<void> cycleClickWheelVolumeLevel() async {
+    final int nextIndex = (state.clickWheelVolumeLevel.index + 1) %
+        ClickWheelVolumeLevel.values.length;
+    final ClickWheelVolumeLevel nextLevel =
+        ClickWheelVolumeLevel.values[nextIndex];
+    state = state.copyWith(clickWheelVolumeLevel: nextLevel);
+
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setClickWheelVolumeLevel(clickWheelVolumeLevelName: nextLevel.name);
   }
 
   Future<void> toggleVolumeMode() async {

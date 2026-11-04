@@ -4,6 +4,7 @@ import 'package:retropod/features/settings/models/click_wheel_acceleration.dart'
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
 import 'package:retropod/features/settings/models/click_wheel_speed.dart';
+import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
@@ -22,6 +23,7 @@ class SettingsPreferencesModel {
   final bool vibrate;
   final bool clickWheelSound;
   final ClickWheelSoundChoice clickWheelSoundChoice;
+  final ClickWheelVolumeLevel clickWheelVolumeLevel;
   final VolumeMode volumeMode;
   final bool splitScreenEnabled;
   final bool immersiveMode;
@@ -45,6 +47,7 @@ class SettingsPreferencesModel {
     required this.vibrate,
     required this.clickWheelSound,
     this.clickWheelSoundChoice = ClickWheelSoundChoice.classic,
+    this.clickWheelVolumeLevel = ClickWheelVolumeLevel.max,
     required this.volumeMode,
     required this.splitScreenEnabled,
     required this.immersiveMode,
@@ -69,6 +72,7 @@ class SettingsPreferencesModel {
     bool? vibrate,
     bool? clickWheelSound,
     ClickWheelSoundChoice? clickWheelSoundChoice,
+    ClickWheelVolumeLevel? clickWheelVolumeLevel,
     VolumeMode? volumeMode,
     bool? splitScreenEnabled,
     bool? immersiveMode,
@@ -94,6 +98,8 @@ class SettingsPreferencesModel {
       clickWheelSound: clickWheelSound ?? this.clickWheelSound,
       clickWheelSoundChoice:
           clickWheelSoundChoice ?? this.clickWheelSoundChoice,
+      clickWheelVolumeLevel:
+          clickWheelVolumeLevel ?? this.clickWheelVolumeLevel,
       volumeMode: volumeMode ?? this.volumeMode,
       splitScreenEnabled: splitScreenEnabled ?? this.splitScreenEnabled,
       immersiveMode: immersiveMode ?? this.immersiveMode,
@@ -122,6 +128,7 @@ class SettingsPreferencesModel {
         other.vibrate == vibrate &&
         other.clickWheelSound == clickWheelSound &&
         other.clickWheelSoundChoice == clickWheelSoundChoice &&
+        other.clickWheelVolumeLevel == clickWheelVolumeLevel &&
         other.volumeMode == volumeMode &&
         other.splitScreenEnabled == splitScreenEnabled &&
         other.immersiveMode == immersiveMode &&
@@ -147,6 +154,7 @@ class SettingsPreferencesModel {
     vibrate,
     clickWheelSound,
     clickWheelSoundChoice,
+    clickWheelVolumeLevel,
     volumeMode,
     splitScreenEnabled,
     immersiveMode,

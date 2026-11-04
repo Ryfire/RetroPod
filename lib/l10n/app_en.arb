@@ -168,6 +168,30 @@
   "@clickSoundMechanical": {
     "description": "The text for the mechanical built-in click wheel sound"
   },
+  "clickWheelVolumeSettingTitle": "Click Wheel Volume",
+  "@clickWheelVolumeSettingTitle": {
+    "description": "The title of the click wheel volume setting"
+  },
+  "clickVolumeMute": "Mute",
+  "@clickVolumeMute": {
+    "description": "The text for the muted click wheel volume level"
+  },
+  "clickVolumeLow": "25%",
+  "@clickVolumeLow": {
+    "description": "The text for the 25% click wheel volume level"
+  },
+  "clickVolumeMedium": "50%",
+  "@clickVolumeMedium": {
+    "description": "The text for the 50% click wheel volume level"
+  },
+  "clickVolumeHigh": "75%",
+  "@clickVolumeHigh": {
+    "description": "The text for the 75% click wheel volume level"
+  },
+  "clickVolumeMax": "100%",
+  "@clickVolumeMax": {
+    "description": "The text for the 100% click wheel volume level"
+  },
   "splitScreenSettingTitle": "Split Screen Mode",
   "@splitScreenSettingTitle": {
     "description": "The title of the split screen mode setting"

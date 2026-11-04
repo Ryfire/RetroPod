@@ -6,8 +6,8 @@ import 'package:retropod/core/utils/enum_from_name.dart';
 /// button press.
 ///
 /// All sounds are short bundled assets (15-45 ms, 44.1 kHz, mono) so the
-/// low latency audio pool can replay them instantly and overlap ticks
-/// when the wheel is spun quickly.
+/// sound pool can cache them in memory, replay them instantly and overlap
+/// ticks when the wheel is spun quickly.
 enum ClickWheelSoundChoice {
   classic('sounds/click_classic.wav'),
   soft('sounds/click_soft.wav'),
@@ -20,8 +20,8 @@ enum ClickWheelSoundChoice {
   static ClickWheelSoundChoice fromName(String? raw) =>
       enumFromName(values, raw, classic);
 
-  /// The bundled asset path handed to [AssetSource], which prepends the
-  /// default `assets/` prefix.
+  /// The bundled asset path relative to the `assets/` root, loaded via
+  /// the root bundle.
   final String assetPath;
 
   String title(BuildContext context) {

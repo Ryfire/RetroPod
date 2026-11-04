@@ -209,6 +209,12 @@ class _SplitScreenPlaceholderState extends ConsumerState<SplitScreenPlaceholder>
           icon: CupertinoIcons.speaker_2,
           contentText: currentSettings.clickWheelSoundChoice.title(context),
         );
+      } else if (splitScreenType == SplitScreenType.clickWheelVolume) {
+        splitScreenWidget = IconPreviewWidget(
+          titleText: context.localization.clickWheelVolumeSettingTitle,
+          icon: CupertinoIcons.speaker_3,
+          contentText: currentSettings.clickWheelVolumeLevel.title(context),
+        );
       } else if (splitScreenType == SplitScreenType.volumeMode) {
         splitScreenWidget = IconPreviewWidget(
           titleText: context.localization.volumeModeSettingTitle,

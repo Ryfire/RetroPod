@@ -8,6 +8,7 @@ import 'package:retropod/features/settings/models/click_wheel_acceleration.dart'
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
 import 'package:retropod/features/settings/models/click_wheel_speed.dart';
+import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
@@ -116,6 +117,13 @@ class SettingsPreferencesRepository {
           SharedPreferencesKeys.clickWheelSoundChoice.name,
         ) ??
         ClickWheelSoundChoice.classic.name;
+  }
+
+  String getClickWheelVolumeLevel() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.clickWheelVolume.name,
+        ) ??
+        ClickWheelVolumeLevel.max.name;
   }
 
   String getVolumeMode() {
@@ -261,6 +269,15 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.clickWheelSoundChoice.name,
       clickWheelSoundChoiceName,
+    );
+  }
+
+  Future<void> setClickWheelVolumeLevel({
+    required String clickWheelVolumeLevelName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.clickWheelVolume.name,
+      clickWheelVolumeLevelName,
     );
   }
 

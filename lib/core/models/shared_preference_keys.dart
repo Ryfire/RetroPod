@@ -11,6 +11,7 @@ enum SharedPreferencesKeys {
   vibrate,
   clickWheelSound,
   clickWheelSoundChoice,
+  clickWheelVolume,
   volumeMode,
   appTheme,
   splitScreenEnabled,

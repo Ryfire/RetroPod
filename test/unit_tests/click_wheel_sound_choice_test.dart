@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
+import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,32 @@ void main() {
           reason: '${choice.assetPath} should exist in the bundle',
         );
       }
+    });
+  });
+
+  group('click_wheel_volume_level', () {
+    test('unknown persisted names fall back to max', () {
+      expect(ClickWheelVolumeLevel.fromName(null), ClickWheelVolumeLevel.max);
+      expect(
+        ClickWheelVolumeLevel.fromName('not_a_level'),
+        ClickWheelVolumeLevel.max,
+      );
+      expect(
+        ClickWheelVolumeLevel.fromName(ClickWheelVolumeLevel.mute.name),
+        ClickWheelVolumeLevel.mute,
+      );
+    });
+
+    test('levels map to the playback volume range', () {
+      final Set<double> values = ClickWheelVolumeLevel.values
+          .map((ClickWheelVolumeLevel level) => level.value)
+          .toSet();
+      expect(values.length, ClickWheelVolumeLevel.values.length);
+      for (final ClickWheelVolumeLevel level in ClickWheelVolumeLevel.values) {
+        expect(level.value, inInclusiveRange(0, 1));
+      }
+      expect(ClickWheelVolumeLevel.mute.value, 0);
+      expect(ClickWheelVolumeLevel.max.value, 1);
     });
   });
 }
