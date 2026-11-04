@@ -7,9 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:retropod/core/alerts/dialogs.dart';
 import 'package:retropod/core/constants/constants.dart';
-import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/models/music_metadata.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/core/services/audio_files_service.dart';
@@ -21,6 +19,7 @@ import 'package:retropod/features/notes/services/notes_service.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
+import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
 import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
@@ -70,6 +69,9 @@ class SettingsPreferencesControllerNotifier
       ),
       vibrate: settingsPreferencesRepository.getVibrate(),
       clickWheelSound: settingsPreferencesRepository.getClickWheelSound(),
+      clickWheelSoundChoice: ClickWheelSoundChoice.fromName(
+        settingsPreferencesRepository.getClickWheelSoundChoice(),
+      ),
       volumeMode: VolumeMode.values.byName(
         settingsPreferencesRepository.getVolumeMode(),
       ),
@@ -343,20 +345,24 @@ class SettingsPreferencesControllerNotifier
         .setVibrate(isVibrateEnabled: state.vibrate);
   }
 
-  Future<void> toggleClickWheelSound(BuildContext context) async {
+  Future<void> toggleClickWheelSound() async {
     state = state.copyWith(clickWheelSound: !state.clickWheelSound);
 
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setClickWheelSound(isClickWheelSoundEnabled: state.clickWheelSound);
+  }
 
-    if (state.clickWheelSound && context.mounted) {
-      await Dialogs.showInfoDialog(
-        context: context,
-        title: context.localization.touchSoundsDialogTitle,
-        content: context.localization.touchSoundsDialogContent,
-      );
-    }
+  Future<void> cycleClickWheelSoundChoice() async {
+    final int nextIndex = (state.clickWheelSoundChoice.index + 1) %
+        ClickWheelSoundChoice.values.length;
+    final ClickWheelSoundChoice nextChoice =
+        ClickWheelSoundChoice.values[nextIndex];
+    state = state.copyWith(clickWheelSoundChoice: nextChoice);
+
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setClickWheelSoundChoice(clickWheelSoundChoiceName: nextChoice.name);
   }
 
   Future<void> toggleVolumeMode() async {

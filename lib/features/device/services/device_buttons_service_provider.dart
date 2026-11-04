@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
 import 'package:retropod/features/device/models/device_action.dart';
+import 'package:retropod/features/device/services/click_sound_service.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
 import 'package:vibration/vibration.dart';
 
@@ -41,7 +41,7 @@ class DeviceButtonsServiceNotifier extends Notifier<DeviceAction?> {
   Future<void> clickWheelSound() async {
     if (!kIsWeb &&
         ref.read(settingsPreferencesControllerProvider).clickWheelSound) {
-      await SystemSound.play(SystemSoundType.click);
+      ref.read(clickSoundServiceProvider).play();
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:retropod/core/utils/rating_snapshot.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
+import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
 import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
@@ -108,6 +109,13 @@ class SettingsPreferencesRepository {
           SharedPreferencesKeys.clickWheelSound.name,
         ) ??
         false;
+  }
+
+  String getClickWheelSoundChoice() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.clickWheelSoundChoice.name,
+        ) ??
+        ClickWheelSoundChoice.classic.name;
   }
 
   String getVolumeMode() {
@@ -244,6 +252,15 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setBool(
       SharedPreferencesKeys.clickWheelSound.name,
       isClickWheelSoundEnabled,
+    );
+  }
+
+  Future<void> setClickWheelSoundChoice({
+    required String clickWheelSoundChoiceName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.clickWheelSoundChoice.name,
+      clickWheelSoundChoiceName,
     );
   }
 

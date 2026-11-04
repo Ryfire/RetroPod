@@ -13,6 +13,7 @@ import 'package:retropod/core/utils/enum_from_name.dart';
 enum ClickWheelSpeed {
   veryCoarse(4),
   coarse(8),
+  normal(12),
   medium(16),
   mediumFine(24),
   fine(32),
@@ -86,6 +87,8 @@ enum ClickWheelSpeed {
         return context.localization.veryCoarse;
       case coarse:
         return context.localization.coarse;
+      case normal:
+        return context.localization.normal;
       case medium:
         return context.localization.medium;
       case mediumFine:

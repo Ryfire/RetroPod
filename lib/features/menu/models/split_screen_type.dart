@@ -21,6 +21,7 @@ enum SplitScreenType {
   repeat,
   vibrate,
   clickWheelSound,
+  clickWheelSoundChoice,
   volumeMode,
   splitScreenMode,
   immersiveMode,

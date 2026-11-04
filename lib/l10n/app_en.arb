@@ -144,6 +144,30 @@
   "@clickWheelSettingTitle": {
     "description": "The title of the click wheel sound setting"
   },
+  "clickWheelSoundSettingTitle": "Click Wheel Sound",
+  "@clickWheelSoundSettingTitle": {
+    "description": "The title of the click wheel sound choice setting"
+  },
+  "clickSoundClassic": "Classic",
+  "@clickSoundClassic": {
+    "description": "The text for the classic built-in click wheel sound"
+  },
+  "clickSoundSoft": "Soft",
+  "@clickSoundSoft": {
+    "description": "The text for the soft built-in click wheel sound"
+  },
+  "clickSoundSharp": "Sharp",
+  "@clickSoundSharp": {
+    "description": "The text for the sharp built-in click wheel sound"
+  },
+  "clickSoundDeep": "Deep",
+  "@clickSoundDeep": {
+    "description": "The text for the deep built-in click wheel sound"
+  },
+  "clickSoundMechanical": "Mechanical",
+  "@clickSoundMechanical": {
+    "description": "The text for the mechanical built-in click wheel sound"
+  },
   "splitScreenSettingTitle": "Split Screen Mode",
   "@splitScreenSettingTitle": {
     "description": "The title of the split screen mode setting"

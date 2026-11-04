@@ -9,6 +9,18 @@ void main() {
       }
     });
 
+    test('normal speed sits between coarse and medium', () {
+      // More sensitive than coarse (8 steps per revolution) and less
+      // sensitive than medium (16), at the log-scale midpoint of the two
+      // with an even 30 degrees of rotation per step.
+      expect(ClickWheelSpeed.normal.stepsPerRevolution, 12);
+      expect(ClickWheelSpeed.normal.thresholdDegrees, 30);
+      final List<int> stepsPerRevolution = ClickWheelSpeed.values
+          .map((ClickWheelSpeed speed) => speed.stepsPerRevolution)
+          .toList();
+      expect(stepsPerRevolution, const [4, 8, 12, 16, 24, 32, 64, 96]);
+    });
+
     test('previous default feel maps to the coarse speed', () {
       // Medium sensitivity + normal step was 45 degrees per step, which is
       // exactly 8 steps per revolution.
@@ -18,6 +30,15 @@ void main() {
           stepMultiplier: 1,
         ),
         ClickWheelSpeed.coarse,
+      );
+      // 30 degrees per step is exactly 12 steps per revolution, which maps
+      // to the normal speed.
+      expect(
+        ClickWheelSpeed.fromLegacySettings(
+          thresholdDegrees: 30,
+          stepMultiplier: 1,
+        ),
+        ClickWheelSpeed.normal,
       );
     });
 

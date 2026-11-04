@@ -13,6 +13,7 @@ import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/features/device/models/click_wheel_rotation_tracker.dart';
 import 'package:retropod/features/device/models/device_action.dart';
+import 'package:retropod/features/device/services/click_sound_service.dart';
 import 'package:retropod/features/device/services/device_buttons_service_provider.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
@@ -28,6 +29,14 @@ class DeviceControls extends ConsumerStatefulWidget {
 class _DeviceControlsState extends ConsumerState<DeviceControls> {
   final GlobalKey _wheelBoxKey = GlobalKey();
   ClickWheelRotationTracker? _rotationTracker;
+
+  @override
+  void initState() {
+    super.initState();
+    // Warm the click sound pool at startup so the very first wheel step
+    // does not pay the audio engine creation cost.
+    ref.read(clickSoundServiceProvider);
+  }
 
   void onWheelPointerDown(
     PointerDownEvent event, {

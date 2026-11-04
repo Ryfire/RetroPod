@@ -2,6 +2,7 @@ import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
+import 'package:retropod/features/settings/models/click_wheel_sound_choice.dart';
 import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
@@ -20,6 +21,7 @@ class SettingsPreferencesModel {
   final RepeatMode repeatMode;
   final bool vibrate;
   final bool clickWheelSound;
+  final ClickWheelSoundChoice clickWheelSoundChoice;
   final VolumeMode volumeMode;
   final bool splitScreenEnabled;
   final bool immersiveMode;
@@ -42,6 +44,7 @@ class SettingsPreferencesModel {
     required this.repeatMode,
     required this.vibrate,
     required this.clickWheelSound,
+    this.clickWheelSoundChoice = ClickWheelSoundChoice.classic,
     required this.volumeMode,
     required this.splitScreenEnabled,
     required this.immersiveMode,
@@ -65,6 +68,7 @@ class SettingsPreferencesModel {
     RepeatMode? repeatMode,
     bool? vibrate,
     bool? clickWheelSound,
+    ClickWheelSoundChoice? clickWheelSoundChoice,
     VolumeMode? volumeMode,
     bool? splitScreenEnabled,
     bool? immersiveMode,
@@ -88,6 +92,8 @@ class SettingsPreferencesModel {
       repeatMode: repeatMode ?? this.repeatMode,
       vibrate: vibrate ?? this.vibrate,
       clickWheelSound: clickWheelSound ?? this.clickWheelSound,
+      clickWheelSoundChoice:
+          clickWheelSoundChoice ?? this.clickWheelSoundChoice,
       volumeMode: volumeMode ?? this.volumeMode,
       splitScreenEnabled: splitScreenEnabled ?? this.splitScreenEnabled,
       immersiveMode: immersiveMode ?? this.immersiveMode,
@@ -115,6 +121,7 @@ class SettingsPreferencesModel {
         other.repeatMode == repeatMode &&
         other.vibrate == vibrate &&
         other.clickWheelSound == clickWheelSound &&
+        other.clickWheelSoundChoice == clickWheelSoundChoice &&
         other.volumeMode == volumeMode &&
         other.splitScreenEnabled == splitScreenEnabled &&
         other.immersiveMode == immersiveMode &&
@@ -129,7 +136,7 @@ class SettingsPreferencesModel {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll(<Object?>[
     languageLocaleCode,
     deviceColor,
     clickWheelSize,
@@ -139,6 +146,7 @@ class SettingsPreferencesModel {
     repeatMode,
     vibrate,
     clickWheelSound,
+    clickWheelSoundChoice,
     volumeMode,
     splitScreenEnabled,
     immersiveMode,
@@ -150,5 +158,5 @@ class SettingsPreferencesModel {
     screenBackgroundColor,
     fontColor,
     highlightColor,
-  );
+  ]);
 }

@@ -34,6 +34,7 @@ enum _SettingsDisplayItems {
   isTouchScreenEnabled,
   vibrate,
   clickWheelSound,
+  clickWheelSoundChoice,
   volumeMode,
   splitScreenEnabled,
   immersiveMode,
@@ -79,6 +80,8 @@ enum _SettingsDisplayItems {
         return context.localization.vibrateSettingTitle;
       case clickWheelSound:
         return context.localization.clickWheelSettingTitle;
+      case clickWheelSoundChoice:
+        return context.localization.clickWheelSoundSettingTitle;
       case splitScreenEnabled:
         return context.localization.splitScreenSettingTitle;
       case immersiveMode:
@@ -181,7 +184,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case _SettingsDisplayItems.clickWheelSound:
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
-            .toggleClickWheelSound(context);
+            .toggleClickWheelSound();
+        break;
+      case _SettingsDisplayItems.clickWheelSoundChoice:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleClickWheelSoundChoice();
         break;
       case _SettingsDisplayItems.volumeMode:
         await ref
@@ -273,6 +281,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.clickWheelSpeed.title(context);
       case _SettingsDisplayItems.clickWheelAcceleration:
         return settingsState.clickWheelAcceleration.title(context);
+      case _SettingsDisplayItems.clickWheelSoundChoice:
+        return settingsState.clickWheelSoundChoice.title(context);
       case _SettingsDisplayItems.appTheme:
         return settingsState.appTheme.title(context);
       case _SettingsDisplayItems.repeat:
@@ -355,6 +365,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case _SettingsDisplayItems.clickWheelSound:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
             SplitScreenType.clickWheelSound;
+        break;
+      case _SettingsDisplayItems.clickWheelSoundChoice:
+        ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
+            SplitScreenType.clickWheelSoundChoice;
         break;
       case _SettingsDisplayItems.volumeMode:
         ref.read(splitScreenControllerProvider.notifier).changeSplitScreenType =
