@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/extensions/go_router_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
+import 'package:retropod/core/services/audio_player_service.dart';
 import 'package:retropod/features/device/models/device_action.dart';
 import 'package:retropod/features/device/services/device_buttons_service_provider.dart';
 import 'package:retropod/features/status_bar/widgets/status_bar.dart';
@@ -19,6 +20,11 @@ const int _kColumns = 7;
 const int _kRows = 5;
 const double _kBrickPadding = 2.0;
 const double _kPaddleSpeed = 18.0;
+const double _kMissileSpeed = 5.0;
+const int _kMissileCooldownMs = 400;
+const int _kMaxMissiles = 3;
+const double _kMissileW = 2.0;
+const double _kMissileH = 8.0;
 
 enum _GameState { playing, paused, gameOver, win }
 
@@ -30,6 +36,7 @@ class _BrickGamePainter extends CustomPainter {
   final Offset ball;
   final double ballRadius;
   final Rect paddle;
+  final List<Offset> missiles;
   final _GameState gameState;
   final int score;
 
@@ -38,6 +45,7 @@ class _BrickGamePainter extends CustomPainter {
     required this.ball,
     required this.ballRadius,
     required this.paddle,
+    required this.missiles,
     required this.gameState,
     required this.score,
   });
@@ -90,6 +98,17 @@ class _BrickGamePainter extends CustomPainter {
       RRect.fromRectAndRadius(paddle, const Radius.circular(4)),
       Paint()..color = const Color(0xFFAAAAAA),
     );
+
+    // Missiles
+    for (final Offset missile in missiles) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(missile.dx, missile.dy, _kMissileW, _kMissileH),
+          const Radius.circular(1),
+        ),
+        Paint()..color = const Color(0xFFFFCC00),
+      );
+    }
   }
 
   @override
@@ -125,6 +144,11 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
   // Bricks
   late List<List<bool>> _bricks;
 
+  // Missiles
+  final List<Offset> _missiles = <Offset>[];
+  Duration? _elapsed;
+  Duration? _lastMissileElapsed;
+
   int _score = 0;
   _GameState _gameState = _GameState.playing;
   Ticker? _ticker;
@@ -148,6 +172,8 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
     const speed = 2.5;
     _ballVelocity = Offset(cos(angle) * speed, sin(angle) * speed);
     _bricks = List.generate(_kRows, (_) => List.filled(_kColumns, true));
+    _missiles.clear();
+    _lastMissileElapsed = null;
     _score = 0;
     _gameState = _GameState.playing;
     _lastTick = null;
@@ -159,6 +185,7 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
     final dt = _lastTick == null
         ? 0.0
         : (elapsed - _lastTick!).inMilliseconds / 16.67;
+    _elapsed = elapsed;
     _lastTick = elapsed;
     if (dt <= 0) return;
 
@@ -226,6 +253,39 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
         }
       }
 
+      // Missiles travel upward and destroy the first brick they overlap.
+      for (int i = _missiles.length - 1; i >= 0; i--) {
+        final Offset missile = _missiles[i] - Offset(0, _kMissileSpeed * dt);
+        final Rect missileRect = Rect.fromLTWH(
+          missile.dx,
+          missile.dy,
+          _kMissileW,
+          _kMissileH,
+        );
+        bool hitBrick = false;
+        missileHit:
+        for (int row = _kRows - 1; row >= 0; row--) {
+          for (int col = 0; col < _kColumns; col++) {
+            if (!_bricks[row][col]) continue;
+            final double left = _kBrickPadding + col * (brickW + _kBrickPadding);
+            final double top = brickAreaTop + row * (brickH + _kBrickPadding);
+            if (missileRect.overlaps(
+              Rect.fromLTWH(left, top, brickW, brickH),
+            )) {
+              _bricks[row][col] = false;
+              _score += (_kRows - row) * 10;
+              hitBrick = true;
+              break missileHit;
+            }
+          }
+        }
+        if (hitBrick || missile.dy + _kMissileH <= 0) {
+          _missiles.removeAt(i);
+        } else {
+          _missiles[i] = missile;
+        }
+      }
+
       // Win check
       final bool allGone = _bricks.every((row) => row.every((b) => !b));
       if (allGone) {
@@ -248,6 +308,26 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
     });
   }
 
+  void _fireMissile() {
+    final Duration? elapsed = _elapsed;
+    if (_missiles.length >= _kMaxMissiles ||
+        (elapsed != null &&
+            _lastMissileElapsed != null &&
+            elapsed.inMilliseconds - _lastMissileElapsed!.inMilliseconds <
+                _kMissileCooldownMs)) {
+      return;
+    }
+    setState(() {
+      _missiles.add(
+        Offset(
+          _paddleX + _paddleW / 2 - _kMissileW / 2,
+          _gameHeight - _paddleH - 4 - _kMissileH,
+        ),
+      );
+      _lastMissileElapsed = elapsed;
+    });
+  }
+
   Future<void> _onDeviceAction(_, DeviceAction? action) async {
     if (action == null) return;
     if (GoRouter.of(context).locationNamed != routeName) return;
@@ -256,17 +336,13 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
         if (mounted) context.pop();
         break;
       case DeviceAction.playPause:
-        setState(() {
-          if (_gameState == _GameState.playing) {
-            _gameState = _GameState.paused;
-          } else if (_gameState == _GameState.paused) {
-            _gameState = _GameState.playing;
-            _lastTick = null;
-          } else if (_gameState == _GameState.gameOver ||
-              _gameState == _GameState.win) {
-            _resetGame();
-          }
-        });
+        await ref.read(audioPlayerServiceProvider.notifier).togglePlayback();
+        break;
+      case DeviceAction.seekForward:
+        await ref.read(audioPlayerServiceProvider.notifier).nextSong();
+        break;
+      case DeviceAction.seekBackward:
+        await ref.read(audioPlayerServiceProvider.notifier).seekBackwards();
         break;
       case DeviceAction.rotateForward:
         if (_gameState == _GameState.playing) {
@@ -279,15 +355,19 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
         }
         break;
       case DeviceAction.select:
-        setState(() {
-          if (_gameState == _GameState.gameOver ||
-              _gameState == _GameState.win) {
-            _resetGame();
-          } else if (_gameState == _GameState.paused) {
-            _gameState = _GameState.playing;
-            _lastTick = null;
-          }
-        });
+        if (_gameState == _GameState.playing) {
+          _fireMissile();
+        } else {
+          setState(() {
+            if (_gameState == _GameState.gameOver ||
+                _gameState == _GameState.win) {
+              _resetGame();
+            } else if (_gameState == _GameState.paused) {
+              _gameState = _GameState.playing;
+              _lastTick = null;
+            }
+          });
+        }
         break;
       default:
         break;
@@ -383,6 +463,7 @@ class _BrickGameScreenState extends ConsumerState<BrickGameScreen>
                           ball: _ball,
                           ballRadius: _ballRadius,
                           paddle: paddleRect,
+                          missiles: _missiles,
                           gameState: _gameState,
                           score: _score,
                         ),

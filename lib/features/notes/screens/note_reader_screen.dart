@@ -81,6 +81,11 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
     unawaited(_openMoreOptions());
   }
 
+  @override
+  Future<void> onPlayPause() async {
+    await ref.read(audioPlayerServiceProvider.notifier).togglePlayback();
+  }
+
   Future<void> _openMoreOptions() async {
     final note = widget.note;
     if (note == null || _isLoading) {

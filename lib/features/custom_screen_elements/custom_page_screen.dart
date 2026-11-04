@@ -30,6 +30,10 @@ mixin CustomPageScreen<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
   void onSelectLongPress() {}
 
+  /// Called when the play/pause button is pressed. Subclasses can override
+  /// this to control media playback; the default does nothing.
+  Future<void> onPlayPause() async {}
+
   Future<void> scrollForward() async {
     if (selectedDisplayItem < displayItems.length - 1) {
       await pageController.nextPage(
@@ -171,6 +175,7 @@ mixin CustomPageScreen<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         seekBackwardLongPress();
         break;
       case DeviceAction.playPause:
+        await onPlayPause();
         break;
       case DeviceAction.longPressEnd:
         onLongPressEnd();
