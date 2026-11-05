@@ -10,6 +10,9 @@ import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
+import 'package:retropod/features/settings/models/seek_interval.dart';
+import 'package:retropod/features/settings/models/sleep_timer_action.dart';
+import 'package:retropod/features/settings/models/status_bar_clock_format.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 
 class SettingsPreferencesModel {
@@ -32,6 +35,12 @@ class SettingsPreferencesModel {
   final DeviceSkin deviceSkin;
   final NoteFontColor noteFontColor;
   final int noteFontSize;
+  final bool autoSaveNoteReadingPosition;
+  final bool noteReaderHideStatusBar;
+  final SeekInterval seekInterval;
+  final SleepTimerAction sleepTimerAction;
+  final bool showStatusBarClock;
+  final StatusBarClockFormat statusBarClockFormat;
   final ScreenColor screenBackgroundColor;
   final ScreenColor fontColor;
   final ScreenColor highlightColor;
@@ -56,6 +65,12 @@ class SettingsPreferencesModel {
     this.deviceSkin = DeviceSkin.classic,
     this.noteFontColor = NoteFontColor.theme,
     this.noteFontSize = Constants.defaultNoteFontSize,
+    this.autoSaveNoteReadingPosition = false,
+    this.noteReaderHideStatusBar = false,
+    this.seekInterval = SeekInterval.five,
+    this.sleepTimerAction = SleepTimerAction.stopMusic,
+    this.showStatusBarClock = false,
+    this.statusBarClockFormat = StatusBarClockFormat.twentyFourHour,
     this.screenBackgroundColor = ScreenColor.theme,
     this.fontColor = ScreenColor.theme,
     this.highlightColor = ScreenColor.theme,
@@ -81,6 +96,12 @@ class SettingsPreferencesModel {
     DeviceSkin? deviceSkin,
     NoteFontColor? noteFontColor,
     int? noteFontSize,
+    bool? autoSaveNoteReadingPosition,
+    bool? noteReaderHideStatusBar,
+    SeekInterval? seekInterval,
+    SleepTimerAction? sleepTimerAction,
+    bool? showStatusBarClock,
+    StatusBarClockFormat? statusBarClockFormat,
     ScreenColor? screenBackgroundColor,
     ScreenColor? fontColor,
     ScreenColor? highlightColor,
@@ -108,6 +129,14 @@ class SettingsPreferencesModel {
       deviceSkin: deviceSkin ?? this.deviceSkin,
       noteFontColor: noteFontColor ?? this.noteFontColor,
       noteFontSize: noteFontSize ?? this.noteFontSize,
+      autoSaveNoteReadingPosition:
+          autoSaveNoteReadingPosition ?? this.autoSaveNoteReadingPosition,
+      noteReaderHideStatusBar:
+          noteReaderHideStatusBar ?? this.noteReaderHideStatusBar,
+      seekInterval: seekInterval ?? this.seekInterval,
+      sleepTimerAction: sleepTimerAction ?? this.sleepTimerAction,
+      showStatusBarClock: showStatusBarClock ?? this.showStatusBarClock,
+      statusBarClockFormat: statusBarClockFormat ?? this.statusBarClockFormat,
       screenBackgroundColor:
           screenBackgroundColor ?? this.screenBackgroundColor,
       fontColor: fontColor ?? this.fontColor,
@@ -137,6 +166,12 @@ class SettingsPreferencesModel {
         other.appTheme == appTheme &&
         other.noteFontColor == noteFontColor &&
         other.noteFontSize == noteFontSize &&
+        other.autoSaveNoteReadingPosition == autoSaveNoteReadingPosition &&
+        other.noteReaderHideStatusBar == noteReaderHideStatusBar &&
+        other.seekInterval == seekInterval &&
+        other.sleepTimerAction == sleepTimerAction &&
+        other.showStatusBarClock == showStatusBarClock &&
+        other.statusBarClockFormat == statusBarClockFormat &&
         other.screenBackgroundColor == screenBackgroundColor &&
         other.fontColor == fontColor &&
         other.highlightColor == highlightColor;
@@ -163,6 +198,12 @@ class SettingsPreferencesModel {
     deviceSkin,
     noteFontColor,
     noteFontSize,
+    autoSaveNoteReadingPosition,
+    noteReaderHideStatusBar,
+    seekInterval,
+    sleepTimerAction,
+    showStatusBarClock,
+    statusBarClockFormat,
     screenBackgroundColor,
     fontColor,
     highlightColor,

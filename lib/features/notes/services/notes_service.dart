@@ -14,6 +14,8 @@ const String _kNoteBookmarksKey = 'note_bookmarks';
 
 const String _kNoteBookmarkOffsetsKey = 'note_bookmark_offsets';
 
+const String _kNoteAutoPositionsKey = 'note_auto_positions';
+
 /// Font sizes (in points) of the legacy 0-based index values stored in
 /// [Constants] before the granular global font size setting existed.
 const List<int> _kLegacyNoteFontSizePresets = [12, 14, 18];
@@ -251,6 +253,75 @@ class NotesServiceNotifier extends AsyncNotifier<List<NoteFileModel>> {
       }
     } catch (_) {
       // Corrupted legacy data, leave it alone
+    }
+  }
+
+  Future<Map<String, int>> _loadAutoPositions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_kNoteAutoPositionsKey);
+    if (raw == null || raw.isEmpty) {
+      return {};
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) {
+        return decoded.map(
+          (key, value) => MapEntry(key, value is int ? value : 0),
+        );
+      }
+    } catch (_) {
+      // Corrupted data, fall back to empty map
+    }
+    return {};
+  }
+
+  /// The auto-saved reading position for a note as a zero-based character
+  /// offset into the file content, or null when the note has none. Stored
+  /// separately from manual bookmarks so the two never overwrite each
+  /// other; the reader restores the manual bookmark first when both exist.
+  Future<int?> getAutoPosition(String notePath) async {
+    final positions = await _loadAutoPositions();
+    return positions[notePath];
+  }
+
+  /// Persists the last-read position for a note. Failures are swallowed so
+  /// a storage hiccup never disrupts reading.
+  Future<void> setAutoPosition(String notePath, int charOffset) async {
+    if (notePath.isEmpty || charOffset < 0) {
+      return;
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final positions = await _loadAutoPositions();
+      positions[notePath] = charOffset;
+      await prefs.setString(_kNoteAutoPositionsKey, jsonEncode(positions));
+    } catch (_) {
+      // Best effort: losing one auto-save is harmless.
+    }
+  }
+
+  /// Removes the auto-saved position for a note, e.g. when its manual
+  /// bookmark is removed so the next open starts fresh.
+  Future<void> removeAutoPosition(String notePath) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final positions = await _loadAutoPositions();
+      if (positions.containsKey(notePath)) {
+        positions.remove(notePath);
+        await prefs.setString(_kNoteAutoPositionsKey, jsonEncode(positions));
+      }
+    } catch (_) {
+      // Best effort
+    }
+  }
+
+  /// Clears every auto-saved reading position, e.g. on Reset Settings.
+  Future<void> clearAllAutoPositions() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kNoteAutoPositionsKey);
+    } catch (_) {
+      // Best effort
     }
   }
 }

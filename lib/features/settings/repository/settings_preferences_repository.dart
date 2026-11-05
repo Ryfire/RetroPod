@@ -14,6 +14,9 @@ import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
+import 'package:retropod/features/settings/models/seek_interval.dart';
+import 'package:retropod/features/settings/models/sleep_timer_action.dart';
+import 'package:retropod/features/settings/models/status_bar_clock_format.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -169,6 +172,48 @@ class SettingsPreferencesRepository {
       return Constants.defaultNoteFontSize;
     }
     return size.clamp(Constants.minNoteFontSize, Constants.maxNoteFontSize);
+  }
+
+  bool getAutoSaveNoteReadingPosition() {
+    return _sharedPreferencesWithCache.getBool(
+          SharedPreferencesKeys.autoSaveNoteReadingPosition.name,
+        ) ??
+        false;
+  }
+
+  bool getNoteReaderHideStatusBar() {
+    return _sharedPreferencesWithCache.getBool(
+          SharedPreferencesKeys.noteReaderHideStatusBar.name,
+        ) ??
+        false;
+  }
+
+  String getSeekInterval() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.seekInterval.name,
+        ) ??
+        SeekInterval.five.name;
+  }
+
+  String getSleepTimerAction() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.sleepTimerAction.name,
+        ) ??
+        SleepTimerAction.stopMusic.name;
+  }
+
+  bool getShowStatusBarClock() {
+    return _sharedPreferencesWithCache.getBool(
+          SharedPreferencesKeys.showStatusBarClock.name,
+        ) ??
+        false;
+  }
+
+  String getStatusBarClockFormat() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.statusBarClockFormat.name,
+        ) ??
+        StatusBarClockFormat.twentyFourHour.name;
   }
 
   String getScreenBackgroundColor() {
@@ -329,6 +374,58 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setInt(
       SharedPreferencesKeys.noteFontSize.name,
       noteFontSize.clamp(Constants.minNoteFontSize, Constants.maxNoteFontSize),
+    );
+  }
+
+  Future<void> setAutoSaveNoteReadingPosition({
+    required bool isAutoSaveNoteReadingPositionEnabled,
+  }) async {
+    return _sharedPreferencesWithCache.setBool(
+      SharedPreferencesKeys.autoSaveNoteReadingPosition.name,
+      isAutoSaveNoteReadingPositionEnabled,
+    );
+  }
+
+  Future<void> setNoteReaderHideStatusBar({
+    required bool isNoteReaderHideStatusBarEnabled,
+  }) async {
+    return _sharedPreferencesWithCache.setBool(
+      SharedPreferencesKeys.noteReaderHideStatusBar.name,
+      isNoteReaderHideStatusBarEnabled,
+    );
+  }
+
+  Future<void> setSeekInterval({required String seekIntervalName}) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.seekInterval.name,
+      seekIntervalName,
+    );
+  }
+
+  Future<void> setSleepTimerAction({
+    required String sleepTimerActionName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.sleepTimerAction.name,
+      sleepTimerActionName,
+    );
+  }
+
+  Future<void> setShowStatusBarClock({
+    required bool isShowStatusBarClockEnabled,
+  }) async {
+    return _sharedPreferencesWithCache.setBool(
+      SharedPreferencesKeys.showStatusBarClock.name,
+      isShowStatusBarClockEnabled,
+    );
+  }
+
+  Future<void> setStatusBarClockFormat({
+    required String statusBarClockFormatName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.statusBarClockFormat.name,
+      statusBarClockFormatName,
     );
   }
 

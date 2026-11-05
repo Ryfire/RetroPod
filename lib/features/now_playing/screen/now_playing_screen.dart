@@ -342,30 +342,42 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
 
   void seekForwardLongPress() {
     _longPressTimer?.cancel();
-    _longPressTimer = Timer.periodic(const Duration(milliseconds: 50), (
-      _,
-    ) async {
-      restartBarInactivityTimer();
-      if (_bottomBarPage == _NowPlayingBottomBarPage.scrubberBar) {
-        _scrubber.step(1);
-        return;
-      }
-      await ref.read(audioPlayerServiceProvider.notifier).seekForward();
+    // One seek fires immediately so holding feels responsive; the tick
+    // period scales with the configured interval to keep the same scrub
+    // velocity for every interval size.
+    unawaited(_longPressSeekTick(1));
+    _longPressTimer = Timer.periodic(_longPressTickPeriod(), (_) {
+      unawaited(_longPressSeekTick(1));
     });
   }
 
   void seekBackwardLongPress() {
     _longPressTimer?.cancel();
-    _longPressTimer = Timer.periodic(const Duration(milliseconds: 50), (
-      _,
-    ) async {
-      restartBarInactivityTimer();
-      if (_bottomBarPage == _NowPlayingBottomBarPage.scrubberBar) {
-        _scrubber.step(-1);
-        return;
-      }
-      await ref.read(audioPlayerServiceProvider.notifier).seekBackward();
+    unawaited(_longPressSeekTick(-1));
+    _longPressTimer = Timer.periodic(_longPressTickPeriod(), (_) {
+      unawaited(_longPressSeekTick(-1));
     });
+  }
+
+  Duration _longPressTickPeriod() {
+    final int stepSeconds = ref
+        .read(settingsPreferencesControllerProvider)
+        .seekInterval
+        .seconds;
+    return Duration(milliseconds: stepSeconds * 50);
+  }
+
+  Future<void> _longPressSeekTick(int direction) async {
+    restartBarInactivityTimer();
+    if (_bottomBarPage == _NowPlayingBottomBarPage.scrubberBar) {
+      _scrubber.step(direction);
+      return;
+    }
+    if (direction > 0) {
+      await ref.read(audioPlayerServiceProvider.notifier).seekForward();
+    } else {
+      await ref.read(audioPlayerServiceProvider.notifier).seekBackward();
+    }
   }
 
   void onLongPressEnd() {

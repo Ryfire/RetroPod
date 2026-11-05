@@ -277,12 +277,19 @@ class AudioPlayerServiceNotifier extends AsyncNotifier<void> {
           .inSeconds;
       final int maxDurationInSeconds =
           ref.read(audioPlayerProvider).duration?.inSeconds ?? 0;
+      final int stepSeconds = ref
+          .read(settingsPreferencesControllerProvider)
+          .seekInterval
+          .seconds;
       if (currentDurationInSeconds + 1 < maxDurationInSeconds) {
         await ref
             .read(audioPlayerProvider)
             .seek(
               Duration(
-                seconds: ref.read(audioPlayerProvider).position.inSeconds + 1,
+                seconds: (currentDurationInSeconds + stepSeconds).clamp(
+                  0,
+                  maxDurationInSeconds,
+                ),
               ),
             );
       }
@@ -292,13 +299,20 @@ class AudioPlayerServiceNotifier extends AsyncNotifier<void> {
   Future<void> seekBackward() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
+      final int currentSeconds = ref
+          .read(audioPlayerProvider)
+          .position
+          .inSeconds;
+      final int stepSeconds = ref
+          .read(settingsPreferencesControllerProvider)
+          .seekInterval
+          .seconds;
+      final int targetSeconds = currentSeconds - stepSeconds < 0
+          ? 0
+          : currentSeconds - stepSeconds;
       await ref
           .read(audioPlayerProvider)
-          .seek(
-            Duration(
-              seconds: ref.read(audioPlayerProvider).position.inSeconds - 1,
-            ),
-          );
+          .seek(Duration(seconds: targetSeconds));
     });
   }
 

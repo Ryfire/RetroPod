@@ -15,6 +15,8 @@ import 'package:retropod/features/settings/controller/settings_preferences_contr
 import 'package:retropod/features/settings/models/screen_color.dart';
 import 'package:retropod/features/settings/models/settings_preferences_model.dart';
 import 'package:retropod/features/settings/widgets/settings_list_tile.dart';
+import 'package:retropod/features/sleep_timer/models/sleep_timer_model.dart';
+import 'package:retropod/features/sleep_timer/provider/sleep_timer_provider.dart';
 import 'package:retropod/features/status_bar/widgets/status_bar.dart';
 
 enum _SettingsDisplayItems {
@@ -26,6 +28,8 @@ enum _SettingsDisplayItems {
   deviceColor,
   deviceSkin,
   noteFontSize,
+  autoSaveNoteReadingPosition,
+  noteReaderHideStatusBar,
   screenColors,
   noteFontColor,
   clickWheelSize,
@@ -37,6 +41,11 @@ enum _SettingsDisplayItems {
   clickWheelSoundChoice,
   clickWheelVolume,
   volumeMode,
+  seekInterval,
+  sleepTimerAction,
+  sleepTimer,
+  showStatusBarClock,
+  statusBarClockFormat,
   splitScreenEnabled,
   immersiveMode,
   showAppTutorial,
@@ -67,6 +76,10 @@ enum _SettingsDisplayItems {
         return context.localization.noteFontColorSettingTitle;
       case noteFontSize:
         return context.localization.noteFontSizeSettingTitle;
+      case autoSaveNoteReadingPosition:
+        return context.localization.autoSaveNoteReadingPositionSettingTitle;
+      case noteReaderHideStatusBar:
+        return context.localization.noteReaderHideStatusBarSettingTitle;
       case screenColors:
         return context.localization.screenColorsSettingTitle;
       case clickWheelSize:
@@ -77,6 +90,16 @@ enum _SettingsDisplayItems {
         return context.localization.clickWheelAccelerationSettingTitle;
       case volumeMode:
         return context.localization.volumeModeSettingTitle;
+      case seekInterval:
+        return context.localization.seekIntervalSettingTitle;
+      case sleepTimerAction:
+        return context.localization.sleepTimerActionSettingTitle;
+      case sleepTimer:
+        return context.localization.sleepTimerTitle;
+      case showStatusBarClock:
+        return context.localization.showStatusBarClockSettingTitle;
+      case statusBarClockFormat:
+        return context.localization.statusBarClockFormatSettingTitle;
       case vibrate:
         return context.localization.vibrateSettingTitle;
       case clickWheelSound:
@@ -156,6 +179,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case _SettingsDisplayItems.noteFontSize:
         context.goNamed(Routes.noteFontSize.name);
         break;
+      case _SettingsDisplayItems.autoSaveNoteReadingPosition:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .toggleAutoSaveNoteReadingPosition();
+        break;
+      case _SettingsDisplayItems.noteReaderHideStatusBar:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .toggleNoteReaderHideStatusBar();
+        break;
       case _SettingsDisplayItems.screenColors:
         context.goNamed(Routes.screenColors.name);
         break;
@@ -204,6 +237,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             .read(settingsPreferencesControllerProvider.notifier)
             .toggleVolumeMode();
         break;
+      case _SettingsDisplayItems.seekInterval:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleSeekInterval();
+        break;
+      case _SettingsDisplayItems.sleepTimerAction:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleSleepTimerAction();
+        break;
+      case _SettingsDisplayItems.sleepTimer:
+        _cycleSleepTimer();
+        break;
+      case _SettingsDisplayItems.showStatusBarClock:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .toggleShowStatusBarClock();
+        break;
+      case _SettingsDisplayItems.statusBarClockFormat:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleStatusBarClockFormat();
+        break;
       case _SettingsDisplayItems.splitScreenEnabled:
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
@@ -240,6 +296,64 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     }
   }
 
+  /// Cycles the sleep timer through Off, 15/30/45/60 minutes and End of
+  /// Current Song, applying each choice immediately. This tile and the
+  /// Sleep Timer screen drive the same controller, so they always agree;
+  /// starting a timer from here replaces any timer that is already
+  /// running. Session-scoped like the real iPod: the timer resets to Off
+  /// when the app restarts and is never persisted.
+  void _cycleSleepTimer() {
+    final SleepTimerState timerState = ref.read(sleepTimerControllerProvider);
+    final int currentIndex = switch (timerState.mode) {
+      SleepTimerMode.off => 0,
+      SleepTimerMode.fixedDuration => switch (timerState.duration?.inMinutes) {
+        15 => 1,
+        30 => 2,
+        45 => 3,
+        60 => 4,
+        _ => 0,
+      },
+      SleepTimerMode.endOfCurrentSong => 5,
+    };
+    // End of Current Song is only offered while something is playing,
+    // mirroring the Sleep Timer screen.
+    final bool endOfSongAvailable =
+        ref.read(nowPlayingDetailsProvider).currentMetadata != null;
+    final List<int> cycle = endOfSongAvailable
+        ? const [0, 1, 2, 3, 4, 5]
+        : const [0, 1, 2, 3, 4];
+    final int next = cycle[(currentIndex + 1) % cycle.length];
+    final SleepTimerController controller = ref.read(
+      sleepTimerControllerProvider.notifier,
+    );
+    switch (next) {
+      case 0:
+        controller.cancel();
+      case 1:
+        controller.start(const Duration(minutes: 15));
+      case 2:
+        controller.start(const Duration(minutes: 30));
+      case 3:
+        controller.start(const Duration(minutes: 45));
+      case 4:
+        controller.start(const Duration(minutes: 60));
+      case 5:
+        controller.stopAtEndOfCurrentSong();
+    }
+  }
+
+  String? _sleepTimerValue() {
+    final SleepTimerState timerState = ref.watch(sleepTimerControllerProvider);
+    return switch (timerState.mode) {
+      SleepTimerMode.off => context.localization.tileValueOff,
+      SleepTimerMode.endOfCurrentSong =>
+        context.localization.sleepTimerEndOfCurrentSong,
+      SleepTimerMode.fixedDuration => context.localization.sleepTimerMinutes(
+        timerState.duration?.inMinutes ?? 0,
+      ),
+    };
+  }
+
   bool? _isOn(
     SettingsPreferencesModel settingsState,
     _SettingsDisplayItems settingsItem,
@@ -255,6 +369,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.clickWheelSound;
       case _SettingsDisplayItems.splitScreenEnabled:
         return settingsState.splitScreenEnabled;
+      case _SettingsDisplayItems.autoSaveNoteReadingPosition:
+        return settingsState.autoSaveNoteReadingPosition;
+      case _SettingsDisplayItems.noteReaderHideStatusBar:
+        return settingsState.noteReaderHideStatusBar;
       case _SettingsDisplayItems.immersiveMode:
         return settingsState.immersiveMode;
       case _SettingsDisplayItems.preventDuplicateTracks:
@@ -299,6 +417,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.repeatMode.title(context);
       case _SettingsDisplayItems.volumeMode:
         return settingsState.volumeMode.title(context);
+      case _SettingsDisplayItems.seekInterval:
+        return settingsState.seekInterval.title(context);
+      case _SettingsDisplayItems.sleepTimerAction:
+        return settingsState.sleepTimerAction.title(context);
+      case _SettingsDisplayItems.sleepTimer:
+        return _sleepTimerValue();
+      case _SettingsDisplayItems.showStatusBarClock:
+        return settingsState.showStatusBarClock
+            ? context.localization.tileValueOn
+            : context.localization.tileValueOff;
+      case _SettingsDisplayItems.statusBarClockFormat:
+        return settingsState.statusBarClockFormat.title(context);
       default:
         final bool? isOn = _isOn(settingsState, settingsItem);
         if (isOn != null) {

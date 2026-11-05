@@ -859,6 +859,55 @@
   "@noteFontSizeSettingTitle": {
     "description": "The setting title for the note reader font size"
   },
+  "autoSaveNoteReadingPositionSettingTitle": "Auto-Save Position",
+  "@autoSaveNoteReadingPositionSettingTitle": {
+    "description": "The setting title for automatically saving the note reading position as a bookmark when leaving the note reader"
+  },
+  "noteReaderHideStatusBarSettingTitle": "Hide Reader Status Bar",
+  "@noteReaderHideStatusBarSettingTitle": {
+    "description": "The setting title for hiding the status bar inside the note reader for a more immersive reading experience"
+  },
+  "seekIntervalSettingTitle": "Seek Interval",
+  "@seekIntervalSettingTitle": {
+    "description": "The setting title for how far each long-press seek step jumps while scrubbing a track"
+  },
+  "seekIntervalSecondsValue": "{seconds} Seconds",
+  "@seekIntervalSecondsValue": {
+    "description": "The value shown for a seek interval setting in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "sleepTimerActionSettingTitle": "Sleep Timer Action",
+  "@sleepTimerActionSettingTitle": {
+    "description": "The setting title for what happens when the sleep timer elapses"
+  },
+  "sleepTimerActionStopMusic": "Stop Music",
+  "@sleepTimerActionStopMusic": {
+    "description": "The sleep timer action that only stops playback"
+  },
+  "sleepTimerActionPowerOff": "Power Off",
+  "@sleepTimerActionPowerOff": {
+    "description": "The sleep timer action that powers the app off when the timer elapses"
+  },
+  "showStatusBarClockSettingTitle": "Show Status Bar Clock",
+  "@showStatusBarClockSettingTitle": {
+    "description": "The setting title for showing the wall clock in the status bar"
+  },
+  "statusBarClockFormatSettingTitle": "Clock Format",
+  "@statusBarClockFormatSettingTitle": {
+    "description": "The setting title for the status bar clock format"
+  },
+  "statusBarClockTwelveHour": "12-Hour",
+  "@statusBarClockTwelveHour": {
+    "description": "The 12-hour status bar clock format option"
+  },
+  "statusBarClockTwentyFourHour": "24-Hour",
+  "@statusBarClockTwentyFourHour": {
+    "description": "The 24-hour status bar clock format option"
+  },
   "noteMenuBookmark": "Add Bookmark",
   "@noteMenuBookmark": {
     "description": "The option in the note reader menu to bookmark the current page"
@@ -870,6 +919,18 @@
   "noteBookmarkIndicator": "Bookmarked page {page} of {total}",
   "@noteBookmarkIndicator": {
     "description": "Shown briefly when the note reader opens at a bookmarked page",
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "noteAutoResumeIndicator": "Resumed page {page} of {total}",
+  "@noteAutoResumeIndicator": {
+    "description": "Shown briefly when the note reader opens at the auto-saved reading position",
     "placeholders": {
       "page": {
         "type": "int"

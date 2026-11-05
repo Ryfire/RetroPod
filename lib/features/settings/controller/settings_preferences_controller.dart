@@ -27,7 +27,10 @@ import 'package:retropod/features/settings/models/device_skin.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
+import 'package:retropod/features/settings/models/seek_interval.dart';
 import 'package:retropod/features/settings/models/settings_preferences_model.dart';
+import 'package:retropod/features/settings/models/sleep_timer_action.dart';
+import 'package:retropod/features/settings/models/status_bar_clock_format.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:retropod/features/settings/repository/settings_preferences_repository.dart';
 import 'package:retropod/features/tutorial/controller/tutorial_controller.dart';
@@ -89,6 +92,20 @@ class SettingsPreferencesControllerNotifier
         settingsPreferencesRepository.getNoteFontColor(),
       ),
       noteFontSize: settingsPreferencesRepository.getNoteFontSize(),
+      autoSaveNoteReadingPosition: settingsPreferencesRepository
+          .getAutoSaveNoteReadingPosition(),
+      noteReaderHideStatusBar: settingsPreferencesRepository
+          .getNoteReaderHideStatusBar(),
+      seekInterval: SeekInterval.fromName(
+        settingsPreferencesRepository.getSeekInterval(),
+      ),
+      sleepTimerAction: SleepTimerAction.fromName(
+        settingsPreferencesRepository.getSleepTimerAction(),
+      ),
+      showStatusBarClock: settingsPreferencesRepository.getShowStatusBarClock(),
+      statusBarClockFormat: StatusBarClockFormat.fromName(
+        settingsPreferencesRepository.getStatusBarClockFormat(),
+      ),
       screenBackgroundColor: ScreenColor.fromName(
         settingsPreferencesRepository.getScreenBackgroundColor(),
       ),
@@ -205,6 +222,70 @@ class SettingsPreferencesControllerNotifier
         .read(settingsPreferencesRepositoryProvider)
         .setNoteFontSize(noteFontSize: clamped);
     await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
+  }
+
+  Future<void> toggleAutoSaveNoteReadingPosition() async {
+    state = state.copyWith(
+      autoSaveNoteReadingPosition: !state.autoSaveNoteReadingPosition,
+    );
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setAutoSaveNoteReadingPosition(
+          isAutoSaveNoteReadingPositionEnabled:
+              state.autoSaveNoteReadingPosition,
+        );
+  }
+
+  Future<void> toggleNoteReaderHideStatusBar() async {
+    state = state.copyWith(
+      noteReaderHideStatusBar: !state.noteReaderHideStatusBar,
+    );
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setNoteReaderHideStatusBar(
+          isNoteReaderHideStatusBarEnabled: state.noteReaderHideStatusBar,
+        );
+  }
+
+  Future<void> cycleSeekInterval() async {
+    final int nextIndex =
+        (state.seekInterval.index + 1) % SeekInterval.values.length;
+    final SeekInterval nextInterval = SeekInterval.values[nextIndex];
+    state = state.copyWith(seekInterval: nextInterval);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSeekInterval(seekIntervalName: nextInterval.name);
+  }
+
+  Future<void> cycleSleepTimerAction() async {
+    final int nextIndex =
+        (state.sleepTimerAction.index + 1) % SleepTimerAction.values.length;
+    final SleepTimerAction nextAction = SleepTimerAction.values[nextIndex];
+    state = state.copyWith(sleepTimerAction: nextAction);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSleepTimerAction(sleepTimerActionName: nextAction.name);
+  }
+
+  Future<void> toggleShowStatusBarClock() async {
+    state = state.copyWith(showStatusBarClock: !state.showStatusBarClock);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setShowStatusBarClock(
+          isShowStatusBarClockEnabled: state.showStatusBarClock,
+        );
+  }
+
+  Future<void> cycleStatusBarClockFormat() async {
+    final int nextIndex =
+        (state.statusBarClockFormat.index + 1) %
+        StatusBarClockFormat.values.length;
+    final StatusBarClockFormat nextFormat =
+        StatusBarClockFormat.values[nextIndex];
+    state = state.copyWith(statusBarClockFormat: nextFormat);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setStatusBarClockFormat(statusBarClockFormatName: nextFormat.name);
   }
 
   Future<void> setScreenBackgroundColor(ScreenColor screenColor) async {
@@ -358,7 +439,8 @@ class SettingsPreferencesControllerNotifier
   }
 
   Future<void> cycleClickWheelSoundChoice() async {
-    final int nextIndex = (state.clickWheelSoundChoice.index + 1) %
+    final int nextIndex =
+        (state.clickWheelSoundChoice.index + 1) %
         ClickWheelSoundChoice.values.length;
     final ClickWheelSoundChoice nextChoice =
         ClickWheelSoundChoice.values[nextIndex];
@@ -370,7 +452,8 @@ class SettingsPreferencesControllerNotifier
   }
 
   Future<void> cycleClickWheelVolumeLevel() async {
-    final int nextIndex = (state.clickWheelVolumeLevel.index + 1) %
+    final int nextIndex =
+        (state.clickWheelVolumeLevel.index + 1) %
         ClickWheelVolumeLevel.values.length;
     final ClickWheelVolumeLevel nextLevel =
         ClickWheelVolumeLevel.values[nextIndex];
@@ -481,6 +564,30 @@ class SettingsPreferencesControllerNotifier
         .read(settingsPreferencesRepositoryProvider)
         .setNoteFontSize(noteFontSize: Constants.defaultNoteFontSize);
     await ref.read(notesServiceProvider.notifier).clearAllFontSizes();
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setAutoSaveNoteReadingPosition(
+          isAutoSaveNoteReadingPositionEnabled: false,
+        );
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setNoteReaderHideStatusBar(isNoteReaderHideStatusBarEnabled: false);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSeekInterval(seekIntervalName: SeekInterval.five.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSleepTimerAction(
+          sleepTimerActionName: SleepTimerAction.stopMusic.name,
+        );
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setShowStatusBarClock(isShowStatusBarClockEnabled: false);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setStatusBarClockFormat(
+          statusBarClockFormatName: StatusBarClockFormat.twentyFourHour.name,
+        );
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setScreenBackgroundColor(

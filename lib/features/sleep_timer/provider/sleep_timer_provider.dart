@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:retropod/core/services/app_shutdown_service.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
+import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
+import 'package:retropod/features/settings/models/sleep_timer_action.dart';
 import 'package:retropod/features/sleep_timer/models/sleep_timer_model.dart';
 
 typedef SleepTimerClock = DateTime Function();
@@ -193,6 +196,16 @@ class SleepTimerController extends Notifier<SleepTimerState> {
     if (generation == _generation) {
       _resetResources();
       state = const SleepTimerState.off();
+      // When configured, the elapsed timer powers the app off exactly like
+      // the main menu Power Off option. The shutdown service is injected
+      // through its provider so tests can override it instead of actually
+      // exiting the process.
+      final SleepTimerAction action = ref
+          .read(settingsPreferencesControllerProvider)
+          .sleepTimerAction;
+      if (action == SleepTimerAction.powerOff) {
+        await ref.read(appShutdownServiceProvider).powerOff();
+      }
     }
   }
 

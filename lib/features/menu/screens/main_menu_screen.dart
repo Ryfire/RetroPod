@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:io' as io;
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
+import 'package:retropod/core/services/app_shutdown_service.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
 import 'package:retropod/core/widgets/display_list_tile.dart';
 import 'package:retropod/features/custom_screen_elements/custom_screen.dart';
@@ -100,15 +98,7 @@ class _MainMenuScreenState extends ConsumerState<MainMenuScreen>
   }
 
   Future<void> _powerOff() async {
-    await ref.read(audioPlayerServiceProvider.notifier).stop();
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-    if (kIsWeb) {
-      await SystemNavigator.pop();
-    } else if (io.Platform.isIOS) {
-      await SystemNavigator.pop();
-    } else {
-      io.exit(0);
-    }
+    await ref.read(appShutdownServiceProvider).powerOff();
   }
 
   Future<void> _navigateToNowPlayingScreen() async {

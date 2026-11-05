@@ -50,10 +50,18 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
   bool _isShowingFontIndicator = false;
   Timer? _fontIndicatorTimer;
   int? _pendingBookmarkOffset;
+  bool _pendingOffsetIsAutoResume = false;
+  bool _pendingJumpToEnd = false;
+  Timer? _autoSaveTimer;
+  bool _autoSaveSettingEnabled = false;
   bool _isShowingBookmarkIndicator = false;
   Timer? _bookmarkIndicatorTimer;
   int _bookmarkIndicatorPage = 0;
   int _bookmarkIndicatorTotal = 0;
+  bool _isShowingResumeIndicator = false;
+  Timer? _resumeIndicatorTimer;
+  int _resumeIndicatorPage = 0;
+  int _resumeIndicatorTotal = 0;
   final Map<int, GlobalKey> _pageTextKeys = <int, GlobalKey>{};
   int _safetyReserve = 0;
   bool _verifyQueued = false;
@@ -114,10 +122,48 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
     await ref.read(audioPlayerServiceProvider.notifier).seekBackwards();
   }
 
+  /// Holding Previous jumps to the first page (Home) and holding Next to
+  /// the last page (End). Taps keep controlling music playback as before.
+  /// A one-shot jump needs no timer or release cleanup because repeating
+  /// it is a no-op.
+  @override
+  void seekForwardLongPress() {
+    _jumpToEdgePage(forward: true);
+  }
+
+  @override
+  void seekBackwardLongPress() {
+    _jumpToEdgePage(forward: false);
+  }
+
+  void _jumpToEdgePage({required bool forward}) {
+    final note = widget.note;
+    if (note == null || _isLoading || _pages.length <= 1) {
+      return;
+    }
+    if (forward && _paginationPending) {
+      // On first open the page list is still being built progressively, so
+      // the "last page" does not exist yet. Remember the intent and jump
+      // once pagination finishes instead of landing on a partial page.
+      _pendingJumpToEnd = true;
+      return;
+    }
+    final int target = forward ? _pages.length - 1 : 0;
+    if (pageController.hasClients) {
+      pageController.jumpToPage(target);
+    } else {
+      setState(() => selectedDisplayItem = target);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     pageController.addListener(_scheduleVerify);
+    pageController.addListener(_scheduleAutoSave);
+    _autoSaveSettingEnabled = ref
+        .read(settingsPreferencesControllerProvider)
+        .autoSaveNoteReadingPosition;
     unawaited(_loadContent());
   }
 
@@ -160,7 +206,51 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
   void dispose() {
     _fontIndicatorTimer?.cancel();
     _bookmarkIndicatorTimer?.cancel();
+    _resumeIndicatorTimer?.cancel();
+    pageController.removeListener(_scheduleAutoSave);
+    if (_autoSaveTimer?.isActive ?? false) {
+      _autoSaveTimer?.cancel();
+      unawaited(_writeAutoPositionNow());
+    }
     super.dispose();
+  }
+
+  /// Auto-saves the reading position, debounced so fast wheel spinning
+  /// collapses into a single write. Manual bookmarks live in their own
+  /// store and are never touched by this.
+  void _scheduleAutoSave() {
+    if (!_autoSaveSettingEnabled || !mounted || _isLoading) {
+      return;
+    }
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        unawaited(_writeAutoPositionNow());
+      }
+    });
+  }
+
+  Future<void> _writeAutoPositionNow() async {
+    final note = widget.note;
+    if (note == null || note.path.isEmpty || _isLoading) {
+      return;
+    }
+    if (_pages.length <= 1) {
+      return;
+    }
+    final int currentPage = pageController.hasClients
+        ? (pageController.page ?? 0).round()
+        : selectedDisplayItem;
+    if (currentPage < 0 || currentPage >= _pageOffsets.length) {
+      return;
+    }
+    try {
+      await ref
+          .read(notesServiceProvider.notifier)
+          .setAutoPosition(note.path, _pageOffsets[currentPage]);
+    } catch (_) {
+      // Best effort: losing one auto-save is harmless.
+    }
   }
 
   void _showBookmarkIndicator(int page, int total) {
@@ -173,6 +263,20 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
     _bookmarkIndicatorTimer = Timer(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() => _isShowingBookmarkIndicator = false);
+      }
+    });
+  }
+
+  void _showResumeIndicator(int page, int total) {
+    _resumeIndicatorTimer?.cancel();
+    setState(() {
+      _isShowingResumeIndicator = true;
+      _resumeIndicatorPage = page;
+      _resumeIndicatorTotal = total;
+    });
+    _resumeIndicatorTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() => _isShowingResumeIndicator = false);
       }
     });
   }
@@ -265,14 +369,29 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
       final int globalSize = ref
           .read(settingsPreferencesControllerProvider)
           .noteFontSize;
+      // Manual bookmark wins over the auto-saved reading position; the
+      // auto position is the fallback so reading always resumes somewhere
+      // sensible without ever being overridden by a manual pin.
       final int? bookmarkOffset = await ref
           .read(notesServiceProvider.notifier)
           .getBookmarkOffset(note.path);
+      int? resumeOffset = bookmarkOffset;
+      bool resumeFromAuto = false;
+      if (resumeOffset == null) {
+        final int? autoPosition = await ref
+            .read(notesServiceProvider.notifier)
+            .getAutoPosition(note.path);
+        if (autoPosition != null) {
+          resumeOffset = autoPosition;
+          resumeFromAuto = true;
+        }
+      }
       if (!mounted) return;
       setState(() {
         _content = content;
         _fontSize = (perNoteSize ?? globalSize).toDouble();
-        _pendingBookmarkOffset = bookmarkOffset;
+        _pendingBookmarkOffset = resumeOffset;
+        _pendingOffsetIsAutoResume = resumeFromAuto;
         _isLoading = false;
         _paginationPending = true;
       });
@@ -438,11 +557,31 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
       _paginationPending = false;
     });
     _pageTextKeys.removeWhere((key, _) => key >= pages.length);
+    // A queued End jump (pressed while pagination was still running) wins
+    // over the pending bookmark restore: the user's latest explicit action
+    // takes precedence and the bookmark simply applies on the next open.
+    if (_pendingJumpToEnd && pages.length > 1) {
+      _pendingJumpToEnd = false;
+      _pendingBookmarkOffset = null;
+      _pendingOffsetIsAutoResume = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || stale()) {
+          return;
+        }
+        if (pageController.hasClients) {
+          pageController.jumpToPage(pages.length - 1);
+        }
+        _scheduleVerify();
+      });
+      return;
+    }
     final int? bookmarkOffset = pages.length > 1
         ? _pendingBookmarkOffset
         : null;
     if (bookmarkOffset != null) {
       _pendingBookmarkOffset = null;
+      final bool isAutoResume = _pendingOffsetIsAutoResume;
+      _pendingOffsetIsAutoResume = false;
       final int target = _pageForOffset(
         pageOffsets,
         bookmarkOffset,
@@ -453,7 +592,11 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
         }
         if (pageController.hasClients) {
           pageController.jumpToPage(target);
-          _showBookmarkIndicator(target + 1, pages.length);
+          if (isAutoResume) {
+            _showResumeIndicator(target + 1, pages.length);
+          } else {
+            _showBookmarkIndicator(target + 1, pages.length);
+          }
         }
         _scheduleVerify();
       });
@@ -576,6 +719,14 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
         return;
       }
       setState(() => _paginationPending = false);
+      // Pagination aborted partway: honor a queued End jump against the
+      // partial page list so the intent is not silently dropped.
+      if (_pendingJumpToEnd && mounted && _pages.length > 1) {
+        _pendingJumpToEnd = false;
+        if (pageController.hasClients) {
+          pageController.jumpToPage(_pages.length - 1);
+        }
+      }
       return;
     }
     if (stale()) {
@@ -617,13 +768,16 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
             .noteFontColor
             .textColor ??
         context.appPrimaryTextColor;
+    final bool hideStatusBar = ref
+        .watch(settingsPreferencesControllerProvider)
+        .noteReaderHideStatusBar;
 
     return CupertinoPageScaffold(
       child: Stack(
         children: [
           Column(
             children: [
-              StatusBar(title: note.name),
+              if (!hideStatusBar) StatusBar(title: note.name),
               Expanded(
                 child: !_isLoading && _content == null
                     ? EmptyStateWidget(
@@ -767,6 +921,27 @@ class _NoteReaderScreenState extends ConsumerState<NoteReaderScreen>
                   context.localization.noteBookmarkIndicator(
                     _bookmarkIndicatorPage,
                     _bookmarkIndicatorTotal,
+                  ),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: context.appHighlightTextColor,
+                  ),
+                ),
+              ),
+            ),
+          if (_isShowingResumeIndicator)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 24,
+                alignment: Alignment.center,
+                color: context.appHighlightColor,
+                child: Text(
+                  context.localization.noteAutoResumeIndicator(
+                    _resumeIndicatorPage,
+                    _resumeIndicatorTotal,
                   ),
                   style: TextStyle(
                     fontSize: 11,
