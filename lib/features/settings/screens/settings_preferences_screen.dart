@@ -44,6 +44,11 @@ enum _SettingsDisplayItems {
   seekInterval,
   sleepTimerAction,
   menuHoldAction,
+  screensaverType,
+  visualizerIdleTime,
+  slideshowDuration,
+  slideshowFolders,
+  keepScreenAwake,
   sleepTimer,
   showStatusBarClock,
   statusBarClockFormat,
@@ -97,6 +102,16 @@ enum _SettingsDisplayItems {
         return context.localization.sleepTimerActionSettingTitle;
       case menuHoldAction:
         return context.localization.menuHoldActionSettingTitle;
+      case screensaverType:
+        return context.localization.screensaverTypeSettingTitle;
+      case visualizerIdleTime:
+        return context.localization.visualizerIdleTimeSettingTitle;
+      case slideshowDuration:
+        return context.localization.slideshowDurationSettingTitle;
+      case slideshowFolders:
+        return context.localization.slideshowFoldersSettingTitle;
+      case keepScreenAwake:
+        return context.localization.keepScreenAwakeSettingTitle;
       case sleepTimer:
         return context.localization.sleepTimerTitle;
       case showStatusBarClock:
@@ -254,6 +269,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
             .cycleMenuHoldAction();
+        break;
+      case _SettingsDisplayItems.screensaverType:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleScreensaverType();
+        break;
+      case _SettingsDisplayItems.visualizerIdleTime:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleVisualizerIdleTime();
+        break;
+      case _SettingsDisplayItems.slideshowDuration:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleSlideshowDuration();
+        break;
+      case _SettingsDisplayItems.slideshowFolders:
+        context.goNamed(Routes.slideshowFolders.name);
+        break;
+      case _SettingsDisplayItems.keepScreenAwake:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .toggleKeepScreenAwake();
         break;
       case _SettingsDisplayItems.sleepTimer:
         _cycleSleepTimer();
@@ -431,6 +469,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.sleepTimerAction.title(context);
       case _SettingsDisplayItems.menuHoldAction:
         return settingsState.menuHoldAction.title(context);
+      case _SettingsDisplayItems.screensaverType:
+        return settingsState.screensaverType.title(context);
+      case _SettingsDisplayItems.visualizerIdleTime:
+        return settingsState.visualizerIdleTime.title(context);
+      case _SettingsDisplayItems.slideshowDuration:
+        return settingsState.slideshowDuration.title(context);
+      case _SettingsDisplayItems.keepScreenAwake:
+        return settingsState.keepScreenAwake
+            ? context.localization.tileValueOn
+            : context.localization.tileValueOff;
       case _SettingsDisplayItems.sleepTimer:
         return _sleepTimerValue();
       case _SettingsDisplayItems.showStatusBarClock:

@@ -15,9 +15,12 @@ import 'package:retropod/features/settings/models/menu_hold_action.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
+import 'package:retropod/features/settings/models/screensaver_type.dart';
 import 'package:retropod/features/settings/models/seek_interval.dart';
 import 'package:retropod/features/settings/models/sleep_timer_action.dart';
+import 'package:retropod/features/settings/models/slideshow_duration.dart';
 import 'package:retropod/features/settings/models/status_bar_clock_format.dart';
+import 'package:retropod/features/settings/models/visualizer_idle_time.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -245,6 +248,41 @@ class SettingsPreferencesRepository {
         ScreenColor.theme.name;
   }
 
+  String getVisualizerIdleTime() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.visualizerIdleTime.name,
+        ) ??
+        VisualizerIdleTime.off.name;
+  }
+
+  bool getKeepScreenAwake() {
+    return _sharedPreferencesWithCache.getBool(
+          SharedPreferencesKeys.keepScreenAwake.name,
+        ) ??
+        false;
+  }
+
+  String getScreensaverType() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.screensaverType.name,
+        ) ??
+        ScreensaverType.visualizer.name;
+  }
+
+  String getSlideshowDuration() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.slideshowDuration.name,
+        ) ??
+        SlideshowDuration.s5.name;
+  }
+
+  List<String> getSlideshowExcludedFolders() {
+    return _sharedPreferencesWithCache.getStringList(
+          SharedPreferencesKeys.slideshowExcludedFolders.name,
+        ) ??
+        [];
+  }
+
   Future<void> setLanguageLocaleCode({
     required String languageLocaleCode,
   }) async {
@@ -466,6 +504,51 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.highlightColor.name,
       highlightColorName,
+    );
+  }
+
+  Future<void> setVisualizerIdleTime({
+    required String visualizerIdleTimeName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.visualizerIdleTime.name,
+      visualizerIdleTimeName,
+    );
+  }
+
+  Future<void> setKeepScreenAwake({
+    required bool isKeepScreenAwakeEnabled,
+  }) async {
+    return _sharedPreferencesWithCache.setBool(
+      SharedPreferencesKeys.keepScreenAwake.name,
+      isKeepScreenAwakeEnabled,
+    );
+  }
+
+  Future<void> setScreensaverType({
+    required String screensaverTypeName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.screensaverType.name,
+      screensaverTypeName,
+    );
+  }
+
+  Future<void> setSlideshowDuration({
+    required String slideshowDurationName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.slideshowDuration.name,
+      slideshowDurationName,
+    );
+  }
+
+  Future<void> setSlideshowExcludedFolders({
+    required List<String> excludedFolderPaths,
+  }) async {
+    return _sharedPreferencesWithCache.setStringList(
+      SharedPreferencesKeys.slideshowExcludedFolders.name,
+      excludedFolderPaths,
     );
   }
 

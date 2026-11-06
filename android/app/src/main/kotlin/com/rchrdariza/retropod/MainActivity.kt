@@ -2,15 +2,24 @@ package com.rchrdariza.retropod
 
 import android.media.AudioAttributes
 import android.media.SoundPool
+import android.media.audiofx.Visualizer
+import android.os.Handler
+import android.os.Looper
+import android.view.WindowManager
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 /// The manifest launcher activity; extends the audio service activity so
 /// media notifications keep working, and hosts the click wheel sound pool
-/// channel (see lib/features/device/services/click_sound_service.dart).
+/// channel (see lib/features/device/services/click_sound_service.dart), the
+/// audio visualizer FFT channel (see
+/// lib/features/now_playing/services/visualizer_service.dart), and the keep
+/// screen awake channel (see
+/// lib/features/now_playing/services/keep_screen_on_service.dart).
 class MainActivity : AudioServiceActivity() {
     private companion object {
         /// Method channel hosting the click wheel sound pool; see
@@ -21,10 +30,27 @@ class MainActivity : AudioServiceActivity() {
         /// ticks of a real iPod click wheel instead of cutting each other
         /// off.
         const val MAX_CLICK_STREAMS = 4
+
+        /// Method channel controlling the audio visualizer FFT capture; see
+        /// lib/features/now_playing/services/visualizer_service.dart.
+        const val VISUALIZER_CHANNEL = "retropod/visualizer"
+
+        /// Event channel streaming raw FFT byte arrays from the audio
+        /// visualizer; see lib/features/now_playing/services/visualizer_service.dart.
+        const val VISUALIZER_EVENTS_CHANNEL = "retropod/visualizer_events"
+
+        /// Method channel holding the FLAG_KEEP_SCREEN_ON window flag while
+        /// the Now Playing screen is open; see
+        /// lib/features/now_playing/services/keep_screen_on_service.dart.
+        const val KEEP_SCREEN_ON_CHANNEL = "retropod/keep_screen_on"
     }
 
     private var clickSoundPool: SoundPool? = null
     private val clickSoundLoadResults = mutableMapOf<Int, MethodChannel.Result>()
+
+    private var visualizer: Visualizer? = null
+    private var visualizerEvents: EventChannel.EventSink? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -38,9 +64,44 @@ class MainActivity : AudioServiceActivity() {
                 else -> result.notImplemented()
             }
         }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            VISUALIZER_CHANNEL,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "attach" -> attachVisualizer(call, result)
+                "detach" -> detachVisualizer(result)
+                else -> result.notImplemented()
+            }
+        }
+        EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            VISUALIZER_EVENTS_CHANNEL,
+        ).setStreamHandler(
+            object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    visualizerEvents = events
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    visualizerEvents = null
+                }
+            },
+        )
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            KEEP_SCREEN_ON_CHANNEL,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "set" -> setKeepScreenOn(call, result)
+                else -> result.notImplemented()
+            }
+        }
     }
 
     override fun onDestroy() {
+        releaseVisualizer()
+        mainHandler.removeCallbacksAndMessages(null)
         clickSoundPool?.release()
         clickSoundPool = null
         clickSoundLoadResults.clear()
@@ -116,5 +177,79 @@ class MainActivity : AudioServiceActivity() {
             return
         }
         result.success(pool.play(soundId, volume, volume, 1, 0, 1f))
+    }
+
+    /// Attaches the android.media.audiofx.Visualizer to the player's audio
+    /// session and streams FFT frames to Flutter. Attaching to our own
+    /// session does not require the RECORD_AUDIO permission.
+    private fun attachVisualizer(call: MethodCall, result: MethodChannel.Result) {
+        val sessionId: Int? = call.argument<Int>("sessionId")
+        if (sessionId == null) {
+            result.error("invalidArguments", "attach requires sessionId", null)
+            return
+        }
+        releaseVisualizer()
+        try {
+            val viz = Visualizer(sessionId)
+            val captureSizeRange = Visualizer.getCaptureSizeRange()
+            viz.captureSize = captureSizeRange[captureSizeRange.size - 1]
+            viz.setDataCaptureListener(
+                object : Visualizer.OnDataCaptureListener {
+                    override fun onWaveFormDataCapture(
+                        visualizer: Visualizer,
+                        waveform: ByteArray,
+                        samplingRate: Int,
+                    ) {
+                        // Only FFT data is used by the visualizer view.
+                    }
+
+                    override fun onFftDataCapture(
+                        visualizer: Visualizer,
+                        fft: ByteArray,
+                        samplingRate: Int,
+                    ) {
+                        val sink = visualizerEvents ?: return
+                        val copy = fft.copyOf()
+                        mainHandler.post { sink.success(copy) }
+                    }
+                },
+                Visualizer.getMaxCaptureRate(),
+                false,
+                true,
+            )
+            viz.enabled = true
+            visualizer = viz
+            result.success(true)
+        } catch (e: Exception) {
+            releaseVisualizer()
+            result.error("visualizerError", e.message, null)
+        }
+    }
+
+    private fun detachVisualizer(result: MethodChannel.Result) {
+        releaseVisualizer()
+        result.success(true)
+    }
+
+    private fun releaseVisualizer() {
+        visualizer?.enabled = false
+        visualizer?.release()
+        visualizer = null
+    }
+
+    private fun setKeepScreenOn(call: MethodCall, result: MethodChannel.Result) {
+        val enable: Boolean? = call.argument<Boolean>("enable")
+        if (enable == null) {
+            result.error("invalidArguments", "set requires enable", null)
+            return
+        }
+        mainHandler.post {
+            if (enable) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+            result.success(true)
+        }
     }
 }

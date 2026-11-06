@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:retropod/core/constants/constants.dart';
 import 'package:retropod/features/settings/models/app_theme.dart';
 import 'package:retropod/features/settings/models/click_wheel_acceleration.dart';
@@ -11,9 +12,12 @@ import 'package:retropod/features/settings/models/menu_hold_action.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
+import 'package:retropod/features/settings/models/screensaver_type.dart';
 import 'package:retropod/features/settings/models/seek_interval.dart';
 import 'package:retropod/features/settings/models/sleep_timer_action.dart';
+import 'package:retropod/features/settings/models/slideshow_duration.dart';
 import 'package:retropod/features/settings/models/status_bar_clock_format.dart';
+import 'package:retropod/features/settings/models/visualizer_idle_time.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 
 class SettingsPreferencesModel {
@@ -46,6 +50,11 @@ class SettingsPreferencesModel {
   final ScreenColor screenBackgroundColor;
   final ScreenColor fontColor;
   final ScreenColor highlightColor;
+  final VisualizerIdleTime visualizerIdleTime;
+  final bool keepScreenAwake;
+  final ScreensaverType screensaverType;
+  final SlideshowDuration slideshowDuration;
+  final List<String> excludedSlideshowFolders;
 
   SettingsPreferencesModel({
     required this.languageLocaleCode,
@@ -77,6 +86,11 @@ class SettingsPreferencesModel {
     this.screenBackgroundColor = ScreenColor.theme,
     this.fontColor = ScreenColor.theme,
     this.highlightColor = ScreenColor.theme,
+    this.visualizerIdleTime = VisualizerIdleTime.off,
+    this.keepScreenAwake = false,
+    this.screensaverType = ScreensaverType.visualizer,
+    this.slideshowDuration = SlideshowDuration.s5,
+    this.excludedSlideshowFolders = const [],
   });
 
   SettingsPreferencesModel copyWith({
@@ -109,6 +123,11 @@ class SettingsPreferencesModel {
     ScreenColor? screenBackgroundColor,
     ScreenColor? fontColor,
     ScreenColor? highlightColor,
+    VisualizerIdleTime? visualizerIdleTime,
+    bool? keepScreenAwake,
+    ScreensaverType? screensaverType,
+    SlideshowDuration? slideshowDuration,
+    List<String>? excludedSlideshowFolders,
   }) {
     return SettingsPreferencesModel(
       languageLocaleCode: languageLocaleCode ?? this.languageLocaleCode,
@@ -146,6 +165,12 @@ class SettingsPreferencesModel {
           screenBackgroundColor ?? this.screenBackgroundColor,
       fontColor: fontColor ?? this.fontColor,
       highlightColor: highlightColor ?? this.highlightColor,
+      visualizerIdleTime: visualizerIdleTime ?? this.visualizerIdleTime,
+      keepScreenAwake: keepScreenAwake ?? this.keepScreenAwake,
+      screensaverType: screensaverType ?? this.screensaverType,
+      slideshowDuration: slideshowDuration ?? this.slideshowDuration,
+      excludedSlideshowFolders:
+          excludedSlideshowFolders ?? this.excludedSlideshowFolders,
     );
   }
 
@@ -180,7 +205,12 @@ class SettingsPreferencesModel {
         other.statusBarClockFormat == statusBarClockFormat &&
         other.screenBackgroundColor == screenBackgroundColor &&
         other.fontColor == fontColor &&
-        other.highlightColor == highlightColor;
+        other.highlightColor == highlightColor &&
+        other.visualizerIdleTime == visualizerIdleTime &&
+        other.keepScreenAwake == keepScreenAwake &&
+        other.screensaverType == screensaverType &&
+        other.slideshowDuration == slideshowDuration &&
+        listEquals(other.excludedSlideshowFolders, excludedSlideshowFolders);
   }
 
   @override
@@ -214,5 +244,10 @@ class SettingsPreferencesModel {
     screenBackgroundColor,
     fontColor,
     highlightColor,
+    visualizerIdleTime,
+    keepScreenAwake,
+    screensaverType,
+    slideshowDuration,
+    Object.hashAll(excludedSlideshowFolders),
   ]);
 }

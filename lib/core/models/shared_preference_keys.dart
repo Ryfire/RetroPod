@@ -34,4 +34,9 @@ enum SharedPreferencesKeys {
   fontColor,
   highlightColor,
   ratingSnapshot,
+  visualizerIdleTime,
+  keepScreenAwake,
+  screensaverType,
+  slideshowDuration,
+  slideshowExcludedFolders,
 }

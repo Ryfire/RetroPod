@@ -28,10 +28,13 @@ import 'package:retropod/features/settings/models/menu_hold_action.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
+import 'package:retropod/features/settings/models/screensaver_type.dart';
 import 'package:retropod/features/settings/models/seek_interval.dart';
 import 'package:retropod/features/settings/models/settings_preferences_model.dart';
 import 'package:retropod/features/settings/models/sleep_timer_action.dart';
+import 'package:retropod/features/settings/models/slideshow_duration.dart';
 import 'package:retropod/features/settings/models/status_bar_clock_format.dart';
+import 'package:retropod/features/settings/models/visualizer_idle_time.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:retropod/features/settings/repository/settings_preferences_repository.dart';
 import 'package:retropod/features/tutorial/controller/tutorial_controller.dart';
@@ -119,6 +122,18 @@ class SettingsPreferencesControllerNotifier
       highlightColor: ScreenColor.fromName(
         settingsPreferencesRepository.getHighlightColor(),
       ),
+      visualizerIdleTime: VisualizerIdleTime.fromName(
+        settingsPreferencesRepository.getVisualizerIdleTime(),
+      ),
+      keepScreenAwake: settingsPreferencesRepository.getKeepScreenAwake(),
+      screensaverType: ScreensaverType.fromName(
+        settingsPreferencesRepository.getScreensaverType(),
+      ),
+      slideshowDuration: SlideshowDuration.fromName(
+        settingsPreferencesRepository.getSlideshowDuration(),
+      ),
+      excludedSlideshowFolders:
+          settingsPreferencesRepository.getSlideshowExcludedFolders(),
     );
   }
 
@@ -279,6 +294,60 @@ class SettingsPreferencesControllerNotifier
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setMenuHoldAction(menuHoldActionName: nextAction.name);
+  }
+
+  Future<void> cycleVisualizerIdleTime() async {
+    final int nextIndex =
+        (state.visualizerIdleTime.index + 1) % VisualizerIdleTime.values.length;
+    final VisualizerIdleTime nextIdleTime =
+        VisualizerIdleTime.values[nextIndex];
+    state = state.copyWith(visualizerIdleTime: nextIdleTime);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setVisualizerIdleTime(visualizerIdleTimeName: nextIdleTime.name);
+  }
+
+  Future<void> toggleKeepScreenAwake() async {
+    state = state.copyWith(keepScreenAwake: !state.keepScreenAwake);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setKeepScreenAwake(isKeepScreenAwakeEnabled: state.keepScreenAwake);
+  }
+
+  Future<void> cycleScreensaverType() async {
+    final int nextIndex =
+        (state.screensaverType.index + 1) % ScreensaverType.values.length;
+    final ScreensaverType nextType = ScreensaverType.values[nextIndex];
+    state = state.copyWith(screensaverType: nextType);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setScreensaverType(screensaverTypeName: nextType.name);
+  }
+
+  Future<void> cycleSlideshowDuration() async {
+    final int nextIndex =
+        (state.slideshowDuration.index + 1) % SlideshowDuration.values.length;
+    final SlideshowDuration nextDuration = SlideshowDuration.values[nextIndex];
+    state = state.copyWith(slideshowDuration: nextDuration);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSlideshowDuration(slideshowDurationName: nextDuration.name);
+  }
+
+  /// Toggles whether [folderPath] contributes photos to the photo slideshow
+  /// screensaver. Enabled folders are every scanned photo folder that is
+  /// not in the excluded list.
+  Future<void> toggleSlideshowFolder({required String folderPath}) async {
+    final List<String> excludedFolders = List<String>.of(
+      state.excludedSlideshowFolders,
+    );
+    if (!excludedFolders.remove(folderPath)) {
+      excludedFolders.add(folderPath);
+    }
+    state = state.copyWith(excludedSlideshowFolders: excludedFolders);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSlideshowExcludedFolders(excludedFolderPaths: excludedFolders);
   }
 
   Future<void> toggleShowStatusBarClock() async {
@@ -618,6 +687,21 @@ class SettingsPreferencesControllerNotifier
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setHighlightColor(highlightColorName: ScreenColor.theme.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setVisualizerIdleTime(visualizerIdleTimeName: VisualizerIdleTime.off.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setKeepScreenAwake(isKeepScreenAwakeEnabled: false);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setScreensaverType(screensaverTypeName: ScreensaverType.visualizer.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSlideshowDuration(slideshowDurationName: SlideshowDuration.s5.name);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setSlideshowExcludedFolders(excludedFolderPaths: []);
     ref.invalidateSelf();
   }
 

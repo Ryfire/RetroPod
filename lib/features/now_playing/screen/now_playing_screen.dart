@@ -12,14 +12,20 @@ import 'package:retropod/core/widgets/empty_state_widget.dart';
 import 'package:retropod/features/device/models/device_action.dart';
 import 'package:retropod/features/device/services/device_buttons_service_provider.dart';
 import 'package:retropod/features/now_playing/provider/now_playing_details_provider.dart';
+import 'package:retropod/features/now_playing/services/keep_screen_on_service.dart';
 import 'package:retropod/features/now_playing/widgets/lyrics_view.dart';
 import 'package:retropod/features/now_playing/widgets/now_playing_bottom_bar.dart';
 import 'package:retropod/features/now_playing/widgets/now_playing_widget.dart';
+import 'package:retropod/features/now_playing/widgets/photo_slideshow_view.dart';
 import 'package:retropod/features/now_playing/widgets/rating_bar.dart';
 import 'package:retropod/features/now_playing/widgets/scrubber_bar.dart';
 import 'package:retropod/features/now_playing/widgets/shuffle_segmented_control.dart';
+import 'package:retropod/features/now_playing/widgets/visualizer_view.dart';
 import 'package:retropod/features/now_playing/widgets/volume_bar.dart';
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
+import 'package:retropod/features/settings/models/screensaver_type.dart';
+import 'package:retropod/features/settings/models/settings_preferences_model.dart';
+import 'package:retropod/features/settings/models/visualizer_idle_time.dart';
 import 'package:retropod/features/settings/models/volume_mode.dart';
 import 'package:retropod/features/status_bar/widgets/status_bar.dart';
 import 'package:retropod/features/tutorial/controller/tutorial_controller.dart';
@@ -47,6 +53,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   final _scrubber = ScrubberController();
   Timer? _longPressTimer;
   Timer? _barInactivityTimer;
+  Timer? _visualizerIdleTimer;
+  bool _visualizerActive = false;
+  StreamSubscription<PlayerState>? _playerStateSubscription;
   bool _isShuffleEnabled = false;
   _NowPlayingBottomBarPage _bottomBarPage = _NowPlayingBottomBarPage.seekBar;
   int? _lastLyricsSongIndex;
@@ -266,8 +275,73 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     });
   }
 
+  /// Raw touch handler: exits the screensaver immediately on any touch and
+  /// re-arms both the bottom bar and screensaver idle timers.
+  void _onPointerActivity() {
+    _hideVisualizer();
+    restartBarInactivityTimer();
+    _restartVisualizerIdleTimer();
+  }
+
+  /// Restarts the screensaver countdown that swaps the whole Now Playing
+  /// screen for the EQ visualizer after the configured idle time.
+  void _restartVisualizerIdleTimer() {
+    _visualizerIdleTimer?.cancel();
+    final VisualizerIdleTime idleTime =
+        ref.read(settingsPreferencesControllerProvider).visualizerIdleTime;
+    final Duration? idleDuration = idleTime.duration;
+    if (idleDuration == null) {
+      _hideVisualizer();
+      return;
+    }
+    _visualizerIdleTimer = Timer(idleDuration, () {
+      if (!mounted) {
+        return;
+      }
+      final bool isPlaying = ref.read(audioPlayerProvider).playing;
+      if (!isPlaying) {
+        return;
+      }
+      // Don't screensaver over the lyrics view; it only exists while the
+      // user is actively reading.
+      if (_bottomBarPage == _NowPlayingBottomBarPage.lyrics) {
+        return;
+      }
+      setState(() {
+        _visualizerActive = true;
+      });
+    });
+  }
+
+  void _hideVisualizer() {
+    if (!_visualizerActive) {
+      return;
+    }
+    setState(() {
+      _visualizerActive = false;
+    });
+  }
+
+  /// Keeps the device display awake while this screen is open and music is
+  /// playing, when the Keep Screen Awake setting is enabled.
+  Future<void> _updateKeepScreenAwake() async {
+    final settings = ref.read(settingsPreferencesControllerProvider);
+    final bool shouldStayAwake =
+        settings.keepScreenAwake && ref.read(audioPlayerProvider).playing;
+    if (shouldStayAwake == keepScreenOnService.isEnabled) {
+      return;
+    }
+    if (shouldStayAwake) {
+      await keepScreenOnService.enable();
+    } else {
+      await keepScreenOnService.disable();
+    }
+  }
+
   Future<void> handleUserInput(FutureOr<void> Function() action) async {
     _barInactivityTimer?.cancel();
+    _visualizerIdleTimer?.cancel();
+    _hideVisualizer();
     _activeInputs++;
     try {
       await _progressReturnTransition;
@@ -279,6 +353,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     } finally {
       _activeInputs--;
       restartBarInactivityTimer();
+      _restartVisualizerIdleTimer();
     }
   }
 
@@ -394,15 +469,42 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
+    _playerStateSubscription = ref
+        .read(audioPlayerProvider)
+        .playerStateStream
+        .listen(_onPlayerStateChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(tutorialControllerProvider.notifier).playNowPlayingTutorial();
+      _restartVisualizerIdleTimer();
+      unawaited(_updateKeepScreenAwake());
     });
+  }
+
+  /// Exits the screensaver and releases the wake lock whenever playback
+  /// stops, and re-arms the screensaver when it resumes; covers external
+  /// pauses like the sleep timer or a media notification.
+  void _onPlayerStateChanged(PlayerState playerState) {
+    if (!mounted) {
+      return;
+    }
+    unawaited(_updateKeepScreenAwake());
+    if (!playerState.playing) {
+      _visualizerIdleTimer?.cancel();
+      _hideVisualizer();
+      return;
+    }
+    _restartVisualizerIdleTimer();
   }
 
   @override
   void dispose() {
     _barInactivityTimer?.cancel();
     _longPressTimer?.cancel();
+    _visualizerIdleTimer?.cancel();
+    unawaited(_playerStateSubscription?.cancel());
+    if (keepScreenOnService.isEnabled) {
+      unawaited(keepScreenOnService.disable());
+    }
     _bottomBarPageController.dispose();
     _lyricsScrollController.dispose();
     super.dispose();
@@ -488,6 +590,15 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     }
 
     ref.listen(deviceButtonsServiceProvider, deviceControlHandler);
+    ref.listen(
+      settingsPreferencesControllerProvider,
+      (SettingsPreferencesModel? previous, SettingsPreferencesModel next) {
+        if (previous != null &&
+            previous.keepScreenAwake != next.keepScreenAwake) {
+          unawaited(_updateKeepScreenAwake());
+        }
+      },
+    );
 
     if (nowPlayingDetails.metadataList.isEmpty) {
       return CupertinoPageScaffold(
@@ -547,82 +658,104 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       bottomBarPages[returnPage] = const NowPlayingBottomBar();
     }
 
+    final ScreensaverType screensaverType =
+        ref.watch(settingsPreferencesControllerProvider).screensaverType;
+    final Widget contentBelowStatusBar = _visualizerActive
+        ? (screensaverType == ScreensaverType.photoSlideshow
+              ? const PhotoSlideshowView(
+                  key: ValueKey('now-playing-slideshow'),
+                )
+              : const VisualizerView(
+                  key: ValueKey('now-playing-visualizer'),
+                ))
+        : Column(
+            key: const ValueKey('now-playing-content'),
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (nowPlayingDetails.isShuffleEnabled)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Icon(
+                        CupertinoIcons.shuffle,
+                        size: 20,
+                        color: context.appPrimaryTextColor,
+                      ),
+                    ),
+                  if (nowPlayingDetails.loopMode != LoopMode.off)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Icon(
+                        (nowPlayingDetails.loopMode == LoopMode.all)
+                            ? CupertinoIcons.repeat
+                            : CupertinoIcons.repeat_1,
+                        size: 20,
+                        color: context.appPrimaryTextColor,
+                      ),
+                    ),
+                  if (!nowPlayingDetails.isShuffleEnabled &&
+                      nowPlayingDetails.loopMode == LoopMode.off)
+                    const SizedBox(height: 20),
+                ],
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => unawaited(handleUserInput(onSelectPressed)),
+                  onLongPress: () =>
+                      unawaited(handleUserInput(onSelectLongPress)),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child:
+                          (_bottomBarPage == _NowPlayingBottomBarPage.lyrics &&
+                              hasLyrics)
+                          ? LyricsView(
+                              key: ValueKey(
+                                'lyrics-view-${nowPlayingDetails.currentMetadata?.originalSongIndex ?? 0}',
+                              ),
+                              lyrics: lyrics,
+                              scrollController: _lyricsScrollController,
+                            )
+                          : NowPlayingWidget(
+                              key: const ValueKey('now-playing-view'),
+                              nowPlayingDetails: nowPlayingDetails,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 30,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: PageView(
+                    controller: _bottomBarPageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: bottomBarPages,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          );
+
     return Listener(
-      onPointerDown: (_) => restartBarInactivityTimer(),
-      onPointerMove: (_) => restartBarInactivityTimer(),
-      onPointerUp: (_) => restartBarInactivityTimer(),
-      onPointerSignal: (_) => restartBarInactivityTimer(),
+      onPointerDown: (_) => _onPointerActivity(),
+      onPointerMove: (_) => _onPointerActivity(),
+      onPointerUp: (_) => _onPointerActivity(),
+      onPointerSignal: (_) => _onPointerActivity(),
       child: CupertinoPageScaffold(
         child: Column(
           children: [
             StatusBar(title: Routes.nowPlaying.title(context)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (nowPlayingDetails.isShuffleEnabled)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Icon(
-                      CupertinoIcons.shuffle,
-                      size: 20,
-                      color: context.appPrimaryTextColor,
-                    ),
-                  ),
-                if (nowPlayingDetails.loopMode != LoopMode.off)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Icon(
-                      (nowPlayingDetails.loopMode == LoopMode.all)
-                          ? CupertinoIcons.repeat
-                          : CupertinoIcons.repeat_1,
-                      size: 20,
-                      color: context.appPrimaryTextColor,
-                    ),
-                  ),
-                if (!nowPlayingDetails.isShuffleEnabled &&
-                    nowPlayingDetails.loopMode == LoopMode.off)
-                  const SizedBox(height: 20),
-              ],
-            ),
             Expanded(
-              child: GestureDetector(
-                onTap: () => unawaited(handleUserInput(onSelectPressed)),
-                onLongPress: () =>
-                    unawaited(handleUserInput(onSelectLongPress)),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child:
-                        (_bottomBarPage == _NowPlayingBottomBarPage.lyrics &&
-                            hasLyrics)
-                        ? LyricsView(
-                            key: ValueKey(
-                              'lyrics-view-${nowPlayingDetails.currentMetadata?.originalSongIndex ?? 0}',
-                            ),
-                            lyrics: lyrics,
-                            scrollController: _lyricsScrollController,
-                          )
-                        : NowPlayingWidget(
-                            key: const ValueKey('now-playing-view'),
-                            nowPlayingDetails: nowPlayingDetails,
-                          ),
-                  ),
-                ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: contentBelowStatusBar,
               ),
             ),
-            SizedBox(
-              height: 30,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: PageView(
-                  controller: _bottomBarPageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: bottomBarPages,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
           ],
         ),
       ),

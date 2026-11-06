@@ -916,6 +916,74 @@
   "@menuHoldActionSleepTimer": {
     "description": "Menu hold action option that opens the Sleep Timer screen"
   },
+  "visualizerIdleTimeSettingTitle": "Visualizer Idle Time",
+  "@visualizerIdleTimeSettingTitle": {
+    "description": "The setting title for how long the Now Playing screen waits without input before the EQ visualizer screensaver activates"
+  },
+  "visualizerIdleTime5Seconds": "5 Seconds",
+  "@visualizerIdleTime5Seconds": {
+    "description": "Visualizer idle time option of five seconds"
+  },
+  "visualizerIdleTime10Seconds": "10 Seconds",
+  "@visualizerIdleTime10Seconds": {
+    "description": "Visualizer idle time option of ten seconds"
+  },
+  "visualizerIdleTime20Seconds": "20 Seconds",
+  "@visualizerIdleTime20Seconds": {
+    "description": "Visualizer idle time option of twenty seconds"
+  },
+  "visualizerIdleTime30Seconds": "30 Seconds",
+  "@visualizerIdleTime30Seconds": {
+    "description": "Visualizer idle time option of thirty seconds"
+  },
+  "keepScreenAwakeSettingTitle": "Keep Screen Awake",
+  "@keepScreenAwakeSettingTitle": {
+    "description": "The setting title for keeping the screen awake while the Now Playing screen is open and music is playing"
+  },
+  "screensaverTypeSettingTitle": "Screensaver Type",
+  "@screensaverTypeSettingTitle": {
+    "description": "The setting title for which screensaver takes over the Now Playing screen after the idle time"
+  },
+  "screensaverTypeVisualizer": "Visualizer",
+  "@screensaverTypeVisualizer": {
+    "description": "Screensaver type option that shows the full-screen EQ visualizer"
+  },
+  "screensaverTypePhotoSlideshow": "Photo Slideshow",
+  "@screensaverTypePhotoSlideshow": {
+    "description": "Screensaver type option that shows a photo slideshow"
+  },
+  "slideshowDurationSettingTitle": "Slideshow Duration",
+  "@slideshowDurationSettingTitle": {
+    "description": "The setting title for how long each photo stays on screen in the slideshow screensaver"
+  },
+  "slideshowDuration3Seconds": "3 Seconds",
+  "@slideshowDuration3Seconds": {
+    "description": "Slideshow duration option of three seconds per photo"
+  },
+  "slideshowDuration5Seconds": "5 Seconds",
+  "@slideshowDuration5Seconds": {
+    "description": "Slideshow duration option of five seconds per photo"
+  },
+  "slideshowDuration10Seconds": "10 Seconds",
+  "@slideshowDuration10Seconds": {
+    "description": "Slideshow duration option of ten seconds per photo"
+  },
+  "slideshowDuration20Seconds": "20 Seconds",
+  "@slideshowDuration20Seconds": {
+    "description": "Slideshow duration option of twenty seconds per photo"
+  },
+  "slideshowDuration30Seconds": "30 Seconds",
+  "@slideshowDuration30Seconds": {
+    "description": "Slideshow duration option of thirty seconds per photo"
+  },
+  "slideshowFoldersSettingTitle": "Slideshow Folders",
+  "@slideshowFoldersSettingTitle": {
+    "description": "The setting title for choosing which photo folders the slideshow screensaver uses"
+  },
+  "noPhotosFound": "No photos found",
+  "@noPhotosFound": {
+    "description": "Empty state shown when no photos are available for the slideshow"
+  },
   "showStatusBarClockSettingTitle": "Show Status Bar Clock",
   "@showStatusBarClockSettingTitle": {
     "description": "The setting title for showing the wall clock in the status bar"

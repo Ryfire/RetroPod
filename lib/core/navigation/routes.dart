@@ -58,6 +58,7 @@ import 'package:retropod/features/settings/screens/screen_color_screen.dart';
 import 'package:retropod/features/settings/screens/screen_colors_screen.dart';
 import 'package:retropod/features/settings/screens/settings_preferences_screen.dart';
 import 'package:retropod/features/settings/screens/skin_selection_screen.dart';
+import 'package:retropod/features/settings/screens/slideshow_folders_screen.dart';
 import 'package:retropod/features/sleep_timer/screens/sleep_timer_screen.dart';
 
 enum Routes {
@@ -75,6 +76,7 @@ enum Routes {
   highlightColor,
   screenColors,
   excludeDirectories,
+  slideshowFolders,
   nowPlaying,
   nowPlayingMoreOptions,
   sleepTimer,
@@ -149,6 +151,8 @@ enum Routes {
         return context.localization.screenColorsSettingTitle;
       case excludeDirectories:
         return context.localization.excludeDirectoriesScreenTitle;
+      case slideshowFolders:
+        return context.localization.slideshowFoldersSettingTitle;
       case nowPlaying:
         return context.localization.nowPlayingScreenTitle;
       case nowPlayingMoreOptions:
@@ -388,6 +392,14 @@ final routerProvider = Provider(
                         },
                         pageBuilder: (context, state) => const CupertinoPage(
                           child: ExcludeDirectoriesScreen(),
+                        ),
+                      ),
+                      GoRoute(
+                        path: Routes.slideshowFolders.name,
+                        name: Routes.slideshowFolders.name,
+                        parentNavigatorKey: rootNavigatorKey,
+                        pageBuilder: (context, state) => const CupertinoPage(
+                          child: SlideshowFoldersScreen(),
                         ),
                       ),
                     ],
