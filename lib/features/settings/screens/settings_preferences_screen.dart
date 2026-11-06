@@ -43,6 +43,7 @@ enum _SettingsDisplayItems {
   volumeMode,
   seekInterval,
   sleepTimerAction,
+  menuHoldAction,
   sleepTimer,
   showStatusBarClock,
   statusBarClockFormat,
@@ -94,6 +95,8 @@ enum _SettingsDisplayItems {
         return context.localization.seekIntervalSettingTitle;
       case sleepTimerAction:
         return context.localization.sleepTimerActionSettingTitle;
+      case menuHoldAction:
+        return context.localization.menuHoldActionSettingTitle;
       case sleepTimer:
         return context.localization.sleepTimerTitle;
       case showStatusBarClock:
@@ -246,6 +249,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         await ref
             .read(settingsPreferencesControllerProvider.notifier)
             .cycleSleepTimerAction();
+        break;
+      case _SettingsDisplayItems.menuHoldAction:
+        await ref
+            .read(settingsPreferencesControllerProvider.notifier)
+            .cycleMenuHoldAction();
         break;
       case _SettingsDisplayItems.sleepTimer:
         _cycleSleepTimer();
@@ -421,6 +429,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         return settingsState.seekInterval.title(context);
       case _SettingsDisplayItems.sleepTimerAction:
         return settingsState.sleepTimerAction.title(context);
+      case _SettingsDisplayItems.menuHoldAction:
+        return settingsState.menuHoldAction.title(context);
       case _SettingsDisplayItems.sleepTimer:
         return _sleepTimerValue();
       case _SettingsDisplayItems.showStatusBarClock:

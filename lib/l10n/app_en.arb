@@ -892,6 +892,30 @@
   "@sleepTimerActionPowerOff": {
     "description": "The sleep timer action that powers the app off when the timer elapses"
   },
+  "menuHoldActionSettingTitle": "Menu Hold Action",
+  "@menuHoldActionSettingTitle": {
+    "description": "The setting title for where a Menu button long press jumps while the Now Playing screen is open"
+  },
+  "menuHoldActionNone": "None",
+  "@menuHoldActionNone": {
+    "description": "Menu hold action option that only plays the haptic feedback and does nothing else"
+  },
+  "menuHoldActionNotes": "Notes",
+  "@menuHoldActionNotes": {
+    "description": "Menu hold action option that opens the Notes screen"
+  },
+  "menuHoldActionBrick": "Brick Game",
+  "@menuHoldActionBrick": {
+    "description": "Menu hold action option that opens the Brick game"
+  },
+  "menuHoldActionMusicQuiz": "Music Quiz",
+  "@menuHoldActionMusicQuiz": {
+    "description": "Menu hold action option that opens the Music Quiz game"
+  },
+  "menuHoldActionSleepTimer": "Sleep Timer",
+  "@menuHoldActionSleepTimer": {
+    "description": "Menu hold action option that opens the Sleep Timer screen"
+  },
   "showStatusBarClockSettingTitle": "Show Status Bar Clock",
   "@showStatusBarClockSettingTitle": {
     "description": "The setting title for showing the wall clock in the status bar"

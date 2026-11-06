@@ -11,6 +11,7 @@ import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
+import 'package:retropod/features/settings/models/menu_hold_action.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
@@ -200,6 +201,13 @@ class SettingsPreferencesRepository {
           SharedPreferencesKeys.sleepTimerAction.name,
         ) ??
         SleepTimerAction.stopMusic.name;
+  }
+
+  String getMenuHoldAction() {
+    return _sharedPreferencesWithCache.getString(
+          SharedPreferencesKeys.menuHoldAction.name,
+        ) ??
+        MenuHoldAction.none.name;
   }
 
   bool getShowStatusBarClock() {
@@ -408,6 +416,15 @@ class SettingsPreferencesRepository {
     return _sharedPreferencesWithCache.setString(
       SharedPreferencesKeys.sleepTimerAction.name,
       sleepTimerActionName,
+    );
+  }
+
+  Future<void> setMenuHoldAction({
+    required String menuHoldActionName,
+  }) async {
+    return _sharedPreferencesWithCache.setString(
+      SharedPreferencesKeys.menuHoldAction.name,
+      menuHoldActionName,
     );
   }
 

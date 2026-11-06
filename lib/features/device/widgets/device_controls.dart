@@ -10,6 +10,7 @@ import 'package:retropod/core/custom_painter/next_button_custom_painter.dart';
 import 'package:retropod/core/custom_painter/play_pause_button_custom_painter.dart';
 import 'package:retropod/core/custom_painter/previous_button_custom_painter.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
+import 'package:retropod/core/extensions/go_router_extensions.dart';
 import 'package:retropod/core/navigation/routes.dart';
 import 'package:retropod/features/device/models/click_wheel_rotation_tracker.dart';
 import 'package:retropod/features/device/models/device_action.dart';
@@ -18,6 +19,7 @@ import 'package:retropod/features/device/services/device_buttons_service_provide
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
 import 'package:retropod/features/settings/models/click_wheel_size.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
+import 'package:retropod/features/settings/models/menu_hold_action.dart';
 
 class DeviceControls extends ConsumerStatefulWidget {
   const DeviceControls({super.key});
@@ -211,17 +213,43 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
                             .read(deviceButtonsServiceProvider.notifier)
                             .clickWheelSound(),
                       ]);
-                      if (context.mounted) {
-                        context.goNamed(Routes.menu.name);
-                        if (!ref
-                            .read(splitScreenViewControllerProvider)
-                            .isScreenVisible) {
-                          unawaited(
-                            ref
-                                .read(splitScreenViewControllerProvider)
-                                .openSplitView(),
-                          );
-                        }
+                      if (!context.mounted) {
+                        return;
+                      }
+                      final String locationNamed = context.router.locationNamed;
+                      if (locationNamed != Routes.nowPlaying.name &&
+                          locationNamed !=
+                              Routes.nowPlayingMoreOptions.name) {
+                        // Outside Now Playing a Menu hold jumps straight to
+                        // the screen of the song that is currently playing.
+                        unawaited(
+                          context.pushNamed(
+                            Routes.nowPlaying.name,
+                            extra: Routes.menu.name,
+                          ),
+                        );
+                        return;
+                      }
+                      // On Now Playing itself the hold runs the shortcut
+                      // chosen in Settings; None intentionally does nothing
+                      // beyond the haptic feedback above.
+                      switch (ref
+                          .read(settingsPreferencesControllerProvider)
+                          .menuHoldAction) {
+                        case MenuHoldAction.none:
+                          break;
+                        case MenuHoldAction.notes:
+                          unawaited(context.pushNamed(Routes.notes.name));
+                          break;
+                        case MenuHoldAction.brick:
+                          unawaited(context.pushNamed(Routes.brick.name));
+                          break;
+                        case MenuHoldAction.musicQuiz:
+                          unawaited(context.pushNamed(Routes.musicQuiz.name));
+                          break;
+                        case MenuHoldAction.sleepTimer:
+                          unawaited(context.pushNamed(Routes.sleepTimer.name));
+                          break;
                       }
                     },
                     child: ColoredBox(
@@ -258,7 +286,7 @@ class _DeviceControlsState extends ConsumerState<DeviceControls> {
                             .read(deviceButtonsServiceProvider.notifier)
                             .setDeviceAction(DeviceAction.longPressEnd),
                         child: SizedBox(
-                          height: screenWidth * 0.2175,
+                          height: screenWidth * selectButtonRadiusRatio,
                           child: ColoredBox(
                             color: controlBackgroundColor,
                             child: Align(

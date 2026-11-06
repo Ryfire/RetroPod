@@ -27,6 +27,7 @@ enum SharedPreferencesKeys {
   noteReaderHideStatusBar,
   seekInterval,
   sleepTimerAction,
+  menuHoldAction,
   showStatusBarClock,
   statusBarClockFormat,
   screenBackgroundColor,

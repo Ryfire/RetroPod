@@ -24,6 +24,7 @@ import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
+import 'package:retropod/features/settings/models/menu_hold_action.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
@@ -101,6 +102,9 @@ class SettingsPreferencesControllerNotifier
       ),
       sleepTimerAction: SleepTimerAction.fromName(
         settingsPreferencesRepository.getSleepTimerAction(),
+      ),
+      menuHoldAction: MenuHoldAction.fromName(
+        settingsPreferencesRepository.getMenuHoldAction(),
       ),
       showStatusBarClock: settingsPreferencesRepository.getShowStatusBarClock(),
       statusBarClockFormat: StatusBarClockFormat.fromName(
@@ -265,6 +269,16 @@ class SettingsPreferencesControllerNotifier
     await ref
         .read(settingsPreferencesRepositoryProvider)
         .setSleepTimerAction(sleepTimerActionName: nextAction.name);
+  }
+
+  Future<void> cycleMenuHoldAction() async {
+    final int nextIndex =
+        (state.menuHoldAction.index + 1) % MenuHoldAction.values.length;
+    final MenuHoldAction nextAction = MenuHoldAction.values[nextIndex];
+    state = state.copyWith(menuHoldAction: nextAction);
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setMenuHoldAction(menuHoldActionName: nextAction.name);
   }
 
   Future<void> toggleShowStatusBarClock() async {
@@ -579,6 +593,11 @@ class SettingsPreferencesControllerNotifier
         .read(settingsPreferencesRepositoryProvider)
         .setSleepTimerAction(
           sleepTimerActionName: SleepTimerAction.stopMusic.name,
+        );
+    await ref
+        .read(settingsPreferencesRepositoryProvider)
+        .setMenuHoldAction(
+          menuHoldActionName: MenuHoldAction.none.name,
         );
     await ref
         .read(settingsPreferencesRepositoryProvider)

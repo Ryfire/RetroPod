@@ -7,6 +7,7 @@ import 'package:retropod/features/settings/models/click_wheel_speed.dart';
 import 'package:retropod/features/settings/models/click_wheel_volume_level.dart';
 import 'package:retropod/features/settings/models/device_color.dart';
 import 'package:retropod/features/settings/models/device_skin.dart';
+import 'package:retropod/features/settings/models/menu_hold_action.dart';
 import 'package:retropod/features/settings/models/note_font_color.dart';
 import 'package:retropod/features/settings/models/repeat_mode.dart';
 import 'package:retropod/features/settings/models/screen_color.dart';
@@ -39,6 +40,7 @@ class SettingsPreferencesModel {
   final bool noteReaderHideStatusBar;
   final SeekInterval seekInterval;
   final SleepTimerAction sleepTimerAction;
+  final MenuHoldAction menuHoldAction;
   final bool showStatusBarClock;
   final StatusBarClockFormat statusBarClockFormat;
   final ScreenColor screenBackgroundColor;
@@ -69,6 +71,7 @@ class SettingsPreferencesModel {
     this.noteReaderHideStatusBar = false,
     this.seekInterval = SeekInterval.five,
     this.sleepTimerAction = SleepTimerAction.stopMusic,
+    this.menuHoldAction = MenuHoldAction.none,
     this.showStatusBarClock = false,
     this.statusBarClockFormat = StatusBarClockFormat.twentyFourHour,
     this.screenBackgroundColor = ScreenColor.theme,
@@ -100,6 +103,7 @@ class SettingsPreferencesModel {
     bool? noteReaderHideStatusBar,
     SeekInterval? seekInterval,
     SleepTimerAction? sleepTimerAction,
+    MenuHoldAction? menuHoldAction,
     bool? showStatusBarClock,
     StatusBarClockFormat? statusBarClockFormat,
     ScreenColor? screenBackgroundColor,
@@ -135,6 +139,7 @@ class SettingsPreferencesModel {
           noteReaderHideStatusBar ?? this.noteReaderHideStatusBar,
       seekInterval: seekInterval ?? this.seekInterval,
       sleepTimerAction: sleepTimerAction ?? this.sleepTimerAction,
+      menuHoldAction: menuHoldAction ?? this.menuHoldAction,
       showStatusBarClock: showStatusBarClock ?? this.showStatusBarClock,
       statusBarClockFormat: statusBarClockFormat ?? this.statusBarClockFormat,
       screenBackgroundColor:
@@ -170,6 +175,7 @@ class SettingsPreferencesModel {
         other.noteReaderHideStatusBar == noteReaderHideStatusBar &&
         other.seekInterval == seekInterval &&
         other.sleepTimerAction == sleepTimerAction &&
+        other.menuHoldAction == menuHoldAction &&
         other.showStatusBarClock == showStatusBarClock &&
         other.statusBarClockFormat == statusBarClockFormat &&
         other.screenBackgroundColor == screenBackgroundColor &&
@@ -202,6 +208,7 @@ class SettingsPreferencesModel {
     noteReaderHideStatusBar,
     seekInterval,
     sleepTimerAction,
+    menuHoldAction,
     showStatusBarClock,
     statusBarClockFormat,
     screenBackgroundColor,
