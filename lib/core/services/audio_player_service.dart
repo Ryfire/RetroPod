@@ -12,7 +12,14 @@ import 'package:retropod/features/now_playing/provider/now_playing_details_provi
 import 'package:retropod/features/settings/controller/settings_preferences_controller.dart';
 
 final audioPlayerProvider = Provider<AudioPlayer>((_) {
-  return AudioPlayer();
+  // Android offload routes playback through a dedicated DSP that bypasses
+  // the audio effects chain, which breaks visualizer capture on some
+  // devices ("Cannot initialize Visualizer engine, error: -3"). Sending
+  // the platform the (default) disabled offload preference keeps playback
+  // on the regular output path so the visualizer engine can attach.
+  return AudioPlayer(
+    androidAudioOffloadPreferences: const AndroidAudioOffloadPreferences(),
+  );
 });
 
 final audioPlayerServiceProvider =

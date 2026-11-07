@@ -1,16 +1,27 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/services/audio_player_service.dart';
 
 /// Dart bridge for the Android audio visualizer: attaches the platform
-/// Visualizer to the player's audio session and streams raw FFT byte
-/// arrays. See android/app/src/main/kotlin/com/rchrdariza/retropod/
+/// Visualizer to the player's audio session and streams FFT and waveform
+/// capture frames. See android/app/src/main/kotlin/com/rchrdariza/retropod/
 /// MainActivity.kt for the native implementation.
 final visualizerServiceProvider = Provider<VisualizerService>((ref) {
   return VisualizerService(ref);
 });
+
+/// A single capture frame from the native visualizer: either FFT bytes
+/// (signed real/imaginary pairs) or waveform bytes (unsigned samples
+/// centered at 128).
+class VisualizerFrame {
+  const VisualizerFrame({required this.isFft, required this.data});
+
+  final bool isFft;
+  final Uint8List data;
+}
 
 class VisualizerService {
   final Ref ref;
@@ -22,29 +33,37 @@ class VisualizerService {
     'retropod/visualizer_events',
   );
 
-  Stream<Uint8List>? _fftStream;
+  Stream<VisualizerFrame>? _framesStream;
 
-  /// Raw FFT frames from the native Visualizer, in the range [-128, 127].
+  /// Capture frames from the native Visualizer, in the range [-128, 127].
   /// Only available while the visualizer is attached and supported.
-  Stream<Uint8List> get fftStream {
-    _fftStream ??= _eventsChannel
+  Stream<VisualizerFrame> get framesStream {
+    _framesStream ??= _eventsChannel
         .receiveBroadcastStream()
-        .map<Uint8List>((dynamic event) {
-          if (event is Uint8List) {
-            return event;
+        .map<VisualizerFrame>((dynamic event) {
+          if (event is Map) {
+            final dynamic data = event['data'];
+            final Uint8List bytes = data is Uint8List
+                ? data
+                : Uint8List.fromList((data as List<dynamic>).cast<int>());
+            return VisualizerFrame(
+              isFft: event['type'] == 'fft',
+              data: bytes,
+            );
           }
-          if (event is List<dynamic>) {
-            return Uint8List.fromList(event.cast<int>());
-          }
-          return Uint8List(0);
+          // Backwards compatibility with the original raw-FFT events.
+          final Uint8List bytes = event is Uint8List
+              ? event
+              : Uint8List.fromList((event as List<dynamic>).cast<int>());
+          return VisualizerFrame(isFft: true, data: bytes);
         });
-    return _fftStream!;
+    return _framesStream!;
   }
 
-  /// Attaches the FFT capture to the audio player's Android session.
-  /// Returns false when the session is unavailable (or on platforms that
-  /// do not support the visualizer), so the caller can fall back to the
-  /// animated visualizer.
+  /// Attaches the FFT/waveform capture to the audio player's Android
+  /// session. Returns false when the session is unavailable (or on
+  /// platforms that do not support the visualizer), so the caller can fall
+  /// back to the animated visualizer.
   Future<bool> attach() async {
     final int? sessionId = ref.read(audioPlayerProvider).androidAudioSessionId;
     if (sessionId == null) {
@@ -55,7 +74,11 @@ class VisualizerService {
         'sessionId': sessionId,
       });
       return true;
-    } on PlatformException {
+    } on PlatformException catch (error) {
+      debugPrint('Visualizer attach failed: ${error.message}');
+      return false;
+    } catch (_) {
+      // Unsupported platforms throw MissingPluginException here.
       return false;
     }
   }
@@ -64,7 +87,7 @@ class VisualizerService {
   Future<void> detach() async {
     try {
       await _channel.invokeMethod<void>('detach');
-    } on PlatformException {
+    } catch (_) {
       // Already detached or unsupported; nothing else to do.
     }
   }

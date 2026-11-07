@@ -5,6 +5,7 @@ import android.media.SoundPool
 import android.media.audiofx.Visualizer
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.WindowManager
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -43,6 +44,9 @@ class MainActivity : AudioServiceActivity() {
         /// the Now Playing screen is open; see
         /// lib/features/now_playing/services/keep_screen_on_service.dart.
         const val KEEP_SCREEN_ON_CHANNEL = "retropod/keep_screen_on"
+
+        /// Log tag for the visualizer attach diagnostics.
+        const val TAG = "RetropodVisualizer"
     }
 
     private var clickSoundPool: SoundPool? = null
@@ -180,8 +184,8 @@ class MainActivity : AudioServiceActivity() {
     }
 
     /// Attaches the android.media.audiofx.Visualizer to the player's audio
-    /// session and streams FFT frames to Flutter. Attaching to our own
-    /// session does not require the RECORD_AUDIO permission.
+    /// session and streams typed FFT/waveform frames to Flutter. Attaching
+    /// to our own session does not require the RECORD_AUDIO permission.
     private fun attachVisualizer(call: MethodCall, result: MethodChannel.Result) {
         val sessionId: Int? = call.argument<Int>("sessionId")
         if (sessionId == null) {
@@ -200,7 +204,13 @@ class MainActivity : AudioServiceActivity() {
                         waveform: ByteArray,
                         samplingRate: Int,
                     ) {
-                        // Only FFT data is used by the visualizer view.
+                        val sink = visualizerEvents ?: return
+                        val copy = waveform.copyOf()
+                        mainHandler.post {
+                            sink.success(
+                                mapOf("type" to "wave", "data" to copy),
+                            )
+                        }
                     }
 
                     override fun onFftDataCapture(
@@ -210,18 +220,24 @@ class MainActivity : AudioServiceActivity() {
                     ) {
                         val sink = visualizerEvents ?: return
                         val copy = fft.copyOf()
-                        mainHandler.post { sink.success(copy) }
+                        mainHandler.post {
+                            sink.success(
+                                mapOf("type" to "fft", "data" to copy),
+                            )
+                        }
                     }
                 },
                 Visualizer.getMaxCaptureRate(),
-                false,
+                true,
                 true,
             )
             viz.enabled = true
             visualizer = viz
+            Log.d(TAG, "Visualizer attached, session=$sessionId, captureSize=${viz.captureSize}")
             result.success(true)
         } catch (e: Exception) {
             releaseVisualizer()
+            Log.e(TAG, "Visualizer attach failed, session=$sessionId", e)
             result.error("visualizerError", e.message, null)
         }
     }

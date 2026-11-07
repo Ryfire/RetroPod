@@ -193,8 +193,11 @@ class _PhotoSlideshowViewState extends ConsumerState<PhotoSlideshowView>
         ? _incomingIndex
         : null;
     final int cacheWidth = _cacheWidth;
+    // Always black, independent of the theme: letterboxed areas around
+    // photos stay true black like a photo frame, regardless of the screen
+    // background color.
     return ColoredBox(
-      color: context.appBackgroundColor,
+      color: CupertinoColors.black,
       child: SizedBox.expand(
         child: Stack(
           fit: StackFit.expand,

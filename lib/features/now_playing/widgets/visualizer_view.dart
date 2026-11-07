@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retropod/core/extensions/build_context_extensions.dart';
 import 'package:retropod/features/now_playing/services/visualizer_service.dart';
 
-/// Full-screen EQ visualizer for the Now Playing screensaver. Streams real
-/// FFT frames from the Android audio session and renders log-scaled bars;
-/// falls back to an animated synthetic EQ when FFT capture is unavailable
-/// or the frames go stale (e.g. playback paused).
+/// Full-screen EQ visualizer for the Now Playing screensaver. On Android it
+/// streams real FFT frames from the audio session and renders log-scaled
+/// bars (with a waveform-derived approximation when the device returns no
+/// usable FFT energy); on platforms without native capture it falls back
+/// to a purely cosmetic animated EQ. Real capture never fakes motion:
+/// silence and missing frames decay the bars to a flat line.
 class VisualizerView extends ConsumerStatefulWidget {
   const VisualizerView({super.key});
 
@@ -24,70 +26,109 @@ class _VisualizerViewState extends ConsumerState<VisualizerView>
   static const int _barCount = 24;
   static const int _fftBinCount = 128;
   static const Duration _fftStaleAfter = Duration(milliseconds: 250);
+  static const Duration _fftAliveWindow = Duration(seconds: 2);
+  static const double _fftAliveThreshold = 0.04;
+  static const int _maxAttachAttempts = 5;
+  static const Duration _attachRetryDelay = Duration(seconds: 2);
+  static const double _waveGain = 2.5;
+  static const double _fftDbFloor = -45.0;
 
   late final Ticker _ticker;
-  StreamSubscription<Uint8List>? _fftSubscription;
+  StreamSubscription<VisualizerFrame>? _framesSubscription;
+  final List<double> _fftLevels = List<double>.filled(_barCount, 0.0);
+  final List<double> _waveLevels = List<double>.filled(_barCount, 0.0);
   final List<double> _targetLevels = List<double>.filled(_barCount, 0.0);
   final List<double> _displayLevels = List<double>.filled(_barCount, 0.0);
   final List<double> _peakLevels = List<double>.filled(_barCount, 0.0);
-  bool _useRealFft = false;
-  DateTime? _lastFftAt;
+  late final bool _platformSupportsCapture;
+  bool _captureAttached = false;
+  DateTime? _lastFrameAt;
+  DateTime? _fftLastAliveAt;
+  int _attachAttempts = 0;
 
   @override
   void initState() {
     super.initState();
+    _platformSupportsCapture =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
     _ticker = createTicker(_onTick);
     _ticker.start();
-    unawaited(_attachRealFft());
+    if (_platformSupportsCapture) {
+      unawaited(_attachRealFft());
+    }
   }
 
   @override
   void dispose() {
-    unawaited(_fftSubscription?.cancel());
+    unawaited(_framesSubscription?.cancel());
     unawaited(ref.read(visualizerServiceProvider).detach());
     _ticker.dispose();
     super.dispose();
   }
 
-  /// Tries to attach the native FFT capture; falls back to the synthetic
-  /// animation when the platform does not support it.
+  /// Tries to attach the native capture, retrying a few times in case the
+  /// first attempt raced ahead of the audio session. If every attempt
+  /// fails, the bars stay at an honest flat line instead of animating.
   Future<void> _attachRealFft() async {
     final bool attached = await ref.read(visualizerServiceProvider).attach();
-    if (!mounted || !attached) {
+    if (!mounted) {
       return;
     }
-    _fftSubscription = ref
+    if (!attached) {
+      _attachAttempts++;
+      if (_attachAttempts < _maxAttachAttempts) {
+        await Future<void>.delayed(_attachRetryDelay);
+        if (mounted) {
+          unawaited(_attachRealFft());
+        }
+      }
+      return;
+    }
+    _captureAttached = true;
+    _framesSubscription = ref
         .read(visualizerServiceProvider)
-        .fftStream
+        .framesStream
         .listen(
-          (Uint8List fft) {
-            _lastFftAt = DateTime.now();
-            _useRealFft = true;
-            _updateTargetsFromFft(fft);
-          },
+          _onFrame,
           onDone: () {
-            _useRealFft = false;
+            _captureAttached = false;
           },
           onError: (Object error) {
-            _useRealFft = false;
+            _captureAttached = false;
           },
         );
   }
 
+  /// Routes incoming native frames: FFT frames feed the spectrum bars, and
+  /// waveform frames provide an audio-reactive fallback when the device
+  /// returns no usable FFT energy.
+  void _onFrame(VisualizerFrame frame) {
+    _lastFrameAt = DateTime.now();
+    if (frame.isFft) {
+      if (_updateFftLevels(frame.data)) {
+        _fftLastAliveAt = _lastFrameAt;
+      }
+    } else {
+      _updateWaveLevels(frame.data);
+    }
+  }
+
   /// Converts raw FFT bytes (signed pairs: real, imaginary) into log-scaled
-  /// per-bar magnitudes so bass does not dominate the display.
-  void _updateTargetsFromFft(Uint8List fft) {
+  /// per-bar magnitudes so bass does not dominate the display. Returns
+  /// whether the frame contained audible energy.
+  bool _updateFftLevels(Uint8List fft) {
     final int pairs = math.min(fft.length ~/ 2, _fftBinCount);
     if (pairs < 4) {
-      return;
+      return false;
     }
+    bool hasEnergy = false;
     for (int bar = 0; bar < _barCount; bar++) {
       final int startBin = _barStartBin(bar, pairs);
       final int endBin = math.max(startBin + 1, _barStartBin(bar + 1, pairs));
       double maxMagnitude = 0;
       for (int bin = startBin; bin < endBin && bin < pairs; bin++) {
-        final int re = fft[2 * bin] - 128;
-        final int im = fft[2 * bin + 1] - 128;
+        final int re = _fftSignedByte(fft[2 * bin]);
+        final int im = _fftSignedByte(fft[2 * bin + 1]);
         final double magnitude = math.sqrt(
           (re * re + im * im).toDouble(),
         );
@@ -95,9 +136,24 @@ class _VisualizerViewState extends ConsumerState<VisualizerView>
           maxMagnitude = magnitude;
         }
       }
-      _targetLevels[bar] = (maxMagnitude / 128).clamp(0.0, 1.0);
+      // dB-scale the magnitudes (0 dB = full scale at 128): raw linear
+      // levels saturate on loud passages, while a -45 dB floor keeps the
+      // bars spread across the range like a classic EQ.
+      final double db =
+          20 * math.log(math.max(maxMagnitude, 1.0) / 128) / math.ln10;
+      _fftLevels[bar] = ((db - _fftDbFloor) / -_fftDbFloor).clamp(0.0, 1.0);
+      if (_fftLevels[bar] > _fftAliveThreshold) {
+        hasEnergy = true;
+      }
     }
+    return hasEnergy;
   }
+
+  /// Converts an Android FFT byte to its signed value. Unlike the waveform
+  /// capture (unsigned, zero at 128), FFT bytes are 8-bit signed; decoding
+  /// them as centered-at-128 inflates every near-zero bin to magnitude ~128
+  /// and pins all bars to the top.
+  static int _fftSignedByte(int byte) => ((byte & 0xFF) ^ 0x80) - 128;
 
   /// Logarithmic frequency mapping across the FFT bins for each bar.
   int _barStartBin(int bar, int totalBins) {
@@ -114,7 +170,52 @@ class _VisualizerViewState extends ConsumerState<VisualizerView>
     return scaled.floor().clamp(1, totalBins);
   }
 
-  /// Synthetic animation used when real FFT frames are not flowing.
+  /// Derives per-bar levels from waveform samples when the FFT stream
+  /// carries no usable energy: splits the buffer into segments, estimates
+  /// each segment's dominant frequency from its zero-crossing rate, and
+  /// deposits its RMS energy on the bars nearest that frequency.
+  void _updateWaveLevels(Uint8List wave) {
+    const int segmentCount = 8;
+    final int segmentLength = wave.length ~/ segmentCount;
+    if (segmentLength < 16) {
+      return;
+    }
+    _waveLevels.fillRange(0, _barCount, 0.0);
+    for (int segment = 0; segment < segmentCount; segment++) {
+      final int offset = segment * segmentLength;
+      double sumSquares = 0;
+      int crossings = 0;
+      int previous = wave[offset] - 128;
+      for (int i = 1; i < segmentLength; i++) {
+        final int sample = wave[offset + i] - 128;
+        sumSquares += sample * sample;
+        if ((sample >= 0) != (previous >= 0)) {
+          crossings++;
+        }
+        previous = sample;
+      }
+      final double rms = math.sqrt(sumSquares / segmentLength) / 128;
+      // Crossings per sample -> cycles per sample -> fraction of the
+      // Nyquist rate.
+      final double normalizedFrequency =
+          (crossings / (segmentLength - 1)).clamp(0.0, 1.0);
+      final double position = normalizedFrequency * (_barCount - 1);
+      final int center = position.round().clamp(0, _barCount - 1);
+      for (int bar = math.max(0, center - 1);
+          bar <= math.min(_barCount - 1, center + 1);
+          bar++) {
+        final double contribution =
+            (rms * _waveGain * (1.0 - (bar - position).abs() * 0.5))
+                .clamp(0.0, 1.0);
+        if (contribution > _waveLevels[bar]) {
+          _waveLevels[bar] = contribution;
+        }
+      }
+    }
+  }
+
+  /// Synthetic animation used only on platforms without native capture
+  /// (web, desktop): a purely cosmetic layered sine wave.
   void _updateTargetsSynthetic(Duration elapsed) {
     final double seconds = elapsed.inMicroseconds / 1e6;
     for (int bar = 0; bar < _barCount; bar++) {
@@ -128,11 +229,30 @@ class _VisualizerViewState extends ConsumerState<VisualizerView>
   }
 
   void _onTick(Duration elapsed) {
-    final bool fftStale =
-        _lastFftAt != null &&
-        DateTime.now().difference(_lastFftAt!) > _fftStaleAfter;
-    if (!_useRealFft || fftStale) {
+    final DateTime now = DateTime.now();
+    final bool framesStale =
+        _lastFrameAt != null &&
+        now.difference(_lastFrameAt!) > _fftStaleAfter;
+    if (!_platformSupportsCapture) {
       _updateTargetsSynthetic(elapsed);
+    } else if (!_captureAttached || framesStale) {
+      // Real capture is expected but no frames are flowing (attached yet
+      // the engine holds silence, the stream died, or attaching is still
+      // in flight): decay to an honest flat line instead of faking
+      // motion.
+      for (int bar = 0; bar < _barCount; bar++) {
+        _targetLevels[bar] = 0;
+      }
+    } else {
+      // Prefer the real FFT spectrum while it is producing energy; the
+      // waveform approximation takes over when the device's FFT output
+      // stays dead.
+      final bool fftAlive =
+          _fftLastAliveAt != null &&
+          now.difference(_fftLastAliveAt!) <= _fftAliveWindow;
+      for (int bar = 0; bar < _barCount; bar++) {
+        _targetLevels[bar] = fftAlive ? _fftLevels[bar] : _waveLevels[bar];
+      }
     }
     const double attack = 0.45;
     const double decay = 0.1;

@@ -40,6 +40,14 @@ class SplashControllerNotifier extends AsyncNotifier<void> {
             .request();
         final PermissionStatus videosPermission = await Permission.videos
             .request();
+        // The audio visualizer requires RECORD_AUDIO even when capturing
+        // only the app's own audio session; permission_handler maps it to
+        // Permission.microphone on Android. Requested best-effort: when it
+        // is denied the visualizer decays to a flat line instead of
+        // blocking app startup.
+        if (Platform.isAndroid) {
+          await Permission.microphone.request();
+        }
         if (audioPermission.isDenied &&
             genericStoragePermission.isDenied &&
             photosPermission.isDenied &&
